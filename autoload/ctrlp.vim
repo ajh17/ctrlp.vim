@@ -260,7 +260,6 @@ endf
 "}}}1
 " * Open & Close {{{1
 fu! s:Open()
-  cal s:log(1)
   cal s:getenv()
   cal s:execextvar('enter')
   sil! exe 'keepa' ( s:mw_pos == 'top' ? 'to' : 'bo' ) '1new ControlP'
@@ -298,7 +297,6 @@ fu! s:Close()
     \ s:mrbs s:did_exp
   cal ctrlp#recordhist()
   cal s:execextvar('exit')
-  cal s:log(0)
   let v:errmsg = s:ermsg
   ec
 endf
@@ -1772,7 +1770,7 @@ fu! s:regisfilter(reg)
 endf
 " Misc {{{2
 fu! s:modevar()
-  let s:matchtype = s:mtype()
+  let s:matchtype = 'path'
   let s:ispath = s:ispathitem()
   let s:mfunc = s:mfunc()
   let s:nolim = s:getextvar('nolim')
@@ -1885,16 +1883,6 @@ fu! s:lastvisual()
   cal setreg('"', oureg, outype)
   cal winrestview(cview)
   retu selected
-endf
-
-fu! s:log(m)
-  if exists('g:ctrlp_log') && g:ctrlp_log | if a:m
-    let cadir = ctrlp#utils#cachedir()
-    let apd = g:ctrlp_log > 1 ? '>' : ''
-    sil! exe 'redi! >'.apd cadir.s:lash(cadir).'ctrlp.log'
-  el
-    sil! redi END
-  en | en
 endf
 
 fu! s:buffunc(e)
@@ -2033,10 +2021,6 @@ fu! s:insertcache(str)
   cal s:writecache(ctrlp#utils#cachefile())
 endf
 " Extensions {{{2
-fu! s:mtype()
-  retu s:itemtype > 2 ? s:getextvar('type') : 'path'
-endf
-
 fu! s:execextvar(key)
   if !empty(g:ctrlp_ext_vars)
     cal map(filter(copy(g:ctrlp_ext_vars),
