@@ -62,7 +62,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'follow_symlinks':       ['s:folsym', 0],
   \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
   \ 'key_loop':              ['s:keyloop', 0],
-  \ 'lazy_update':           ['s:lazy', 0],
   \ 'match_func':            ['s:matcher', {}],
   \ 'match_window':          ['s:mw', ''],
   \ 'match_window_bottom':   ['s:mwbottom', 1],
@@ -213,10 +212,7 @@ function! s:opts(...)
   let s:igntype = empty(s:usrign) ? -1 : type(s:usrign)
   let s:lash = ctrlp#utils#lash()
   if s:keyloop
-    let [s:lazy, s:glbs['imd']] = [0, 0]
-  en
-  if s:lazy
-    cal extend(s:glbs, { 'ut': ( s:lazy > 1 ? s:lazy : 250 ) })
+    let s:glbs['imd'] = 0
   en
   " Keymaps
   if type(s:urprtmaps) == 4
@@ -305,7 +301,6 @@ endfunction
 function! s:Reset(args)
   let opts = has_key(a:args, 'opts') ? [a:args['opts']] : []
   cal call('s:opts', opts)
-  cal s:autocmds()
   cal ctrlp#utils#opts()
   cal s:execextvar('opts')
 endfunction
@@ -543,8 +538,7 @@ endfunction
 function! s:BuildPrompt(upd)
   let base = ( s:regexp ? 'r' : '>' ).( s:byfname() ? 'd' : '>' ).'> '
   let str = escape(s:getinput(), '\')
-  let lazy = str == '' || exists('s:force') || !has('autocmd') ? 0 : s:lazy
-  if a:upd && !lazy && ( s:matches || s:regexp || exists('s:did_exp')
+  if a:upd && ( s:matches || s:regexp || exists('s:did_exp')
     \ || str =~ '\(\\\(<\|>\)\|[*|]\)\|\(\\\:\([^:]\|\\:\)*$\)' )
     sil! cal s:Update(str)
   en
@@ -873,10 +867,10 @@ function! s:ToggleKeyLoop()
     let &imd = !s:keyloop
   en
   if s:keyloop
-    let [&ut, s:lazy] = [0, 0]
+    let &ut = 0
     cal s:KeyLoop()
   elsei has_key(s:glbs, 'ut')
-    let [&ut, s:lazy] = [s:glbs['ut'], 1]
+    let &ut = s:glbs['ut']
   en
 endfunction
 
@@ -2003,19 +1997,6 @@ if has('autocmd')
     au VimLeavePre * cal s:leavepre()
   aug END
 endif
-
-function! s:autocmds()
-  if !has('autocmd') | retu | en
-  if exists('#CtrlPLazy')
-    au! CtrlPLazy
-  en
-  if s:lazy
-    aug CtrlPLazy
-      au!
-      au CursorHold ControlP cal s:ForceUpdate()
-    aug END
-  en
-endfunction
 "}}}
 
 " vim:fen:fdm=marker:fmr={{{,}}}:fdl=0:fdc=1:ts=2:sw=2:sts=2
