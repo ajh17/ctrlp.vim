@@ -55,7 +55,6 @@ endf
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ ['g:ctrlp_', 'b:ctrlp_', {
   \ 'arg_map':               ['s:argmap', 0],
-  \ 'buffer_func':           ['s:buffunc', {}],
   \ 'by_filename':           ['s:byfname', 0],
   \ 'custom_ignore':         ['s:usrign', s:ignore()],
   \ 'default_input':         ['s:deftxt', 0],
@@ -262,7 +261,6 @@ fu! s:Open()
   cal s:getenv()
   cal s:execextvar('enter')
   sil! exe 'keepa' ( s:mw_pos == 'top' ? 'to' : 'bo' ) '1new ControlP'
-  cal s:buffunc(1)
   let [s:bufnr, s:winw] = [bufnr('%'), winwidth(0)]
   let [s:focus, s:prompt] = [1, ['', '', '']]
   abc <buffer>
@@ -277,7 +275,6 @@ fu! s:Open()
 endf
 
 fu! s:Close()
-  cal s:buffunc(0)
   if winnr('$') == 1
     bw!
   el
@@ -1852,14 +1849,6 @@ fu! s:lastvisual()
   cal setreg('"', oureg, outype)
   cal winrestview(cview)
   retu selected
-endf
-
-fu! s:buffunc(e)
-  if a:e && has_key(s:buffunc, 'enter')
-    cal call(s:buffunc['enter'], [], s:buffunc)
-  elsei !a:e && has_key(s:buffunc, 'exit')
-    cal call(s:buffunc['exit'], [], s:buffunc)
-  en
 endf
 
 fu! s:openfile(cmd, fid, tail, chkmod, ...)
