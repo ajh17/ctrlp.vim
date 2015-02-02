@@ -57,7 +57,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'arg_map':               ['s:argmap', 0],
   \ 'by_filename':           ['s:byfname', 0],
   \ 'custom_ignore':         ['s:usrign', s:ignore()],
-  \ 'default_input':         ['s:deftxt', 0],
   \ 'dont_split':            ['s:nosplit', 'netrw'],
   \ 'dotfiles':              ['s:showhidden', 0],
   \ 'extensions':            ['s:extensions', []],
@@ -575,16 +574,6 @@ fu! s:BuildPrompt(upd)
   if empty(prt[1]) && s:focus
     exe 'echoh' hibase '| echon "_" | echoh None'
   en
-endf
-" - SetDefTxt() {{{1
-fu! s:SetDefTxt()
-  if s:deftxt == '0' || ( s:deftxt == 1 && !s:ispath ) | retu | en
-  let txt = s:deftxt
-  if !type(txt)
-    let path = s:crfpath.s:lash(s:crfpath)
-    let txt = txt && !stridx(path, s:dyncwd) ? ctrlp#rmbasedir([path])[0] : ''
-  en
-  let s:prompt[0] = txt
 endf
 " ** Prt Actions {{{1
 " Editing {{{2
@@ -2010,7 +1999,6 @@ function! ctrlp#init(type, ...)
   cal s:MapNorms()
   cal s:MapSpecs()
   cal ctrlp#setlines(s:settype(a:type))
-  cal s:SetDefTxt()
   cal s:BuildPrompt(1)
   if s:keyloop | call s:KeyLoop() | endif
 endfunction
