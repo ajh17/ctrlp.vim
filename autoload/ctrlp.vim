@@ -54,7 +54,6 @@ endfunction
 " Script local vars {{{2
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ ['g:ctrlp_', 'b:ctrlp_', {
-  \ 'arg_map':               ['s:argmap', 0],
   \ 'by_filename':           ['s:byfname', 0],
   \ 'custom_ignore':         ['s:usrign', s:ignore()],
   \ 'dont_split':            ['s:nosplit', 'netrw'],
@@ -70,16 +69,13 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'max_files':             ['s:maxfiles', 10000],
   \ 'max_height':            ['s:mxheight', 10],
   \ 'max_history':           ['s:maxhst', exists('+hi') ? &hi : 20],
-  \ 'mruf_default_order':    ['s:mrudef', 0],
   \ 'open_multi':            ['s:opmul', '1v'],
   \ 'open_new_file':         ['s:newfop', 'v'],
   \ 'prompt_mappings':       ['s:urprtmaps', 0],
   \ 'regexp_search':         ['s:regexp', 0],
   \ 'root_markers':          ['s:rmarkers', []],
   \ 'split_window':          ['s:splitwin', 0],
-  \ 'status_func':           ['s:status', {}],
   \ 'tabpage_position':      ['s:tabpage', 'ac'],
-  \ 'use_caching':           ['s:caching', 1],
   \ 'user_command':          ['s:usrcmd', ''],
   \ 'working_path_mode':     ['s:pathmode', 'ra'],
   \ }, {
@@ -1016,7 +1012,7 @@ endfunction
 function! s:CreateNewFile(...)
   let [md, str] = ['', s:getinput('n')]
   if empty(str) | retu | en
-  if s:argmap && !a:0
+  if !a:0
     " Get the extra argument
     let md = s:argmaps(md, 1)
     if md == 'cancel' | retu | en
@@ -1087,7 +1083,7 @@ function! s:OpenMulti(...)
     let marked = { 1 : fnamemodify(line, ':p') }
     let [nr, ur, jf, nopt] = ['1', 0, 0, 1]
   en
-  if ( s:argmap || !has_marked ) && !a:0
+  if ( !has_marked ) && !a:0
     let md = s:argmaps(md, !has_marked ? 2 : 0)
     if md == 'c'
       unl! s:marked
@@ -1726,7 +1722,7 @@ function! s:modevar()
 endfunction
 
 function! s:nosort()
-  retu s:matcher != {} || s:nolim == 1 || ( s:itemtype == 2 && s:mrudef )
+  retu s:matcher != {} || s:nolim == 1 || ( s:itemtype == 2 )
     \ || ( s:itemtype =~ '\v^(1|2)$' && s:prompt == ['', '', ''] ) || !s:dosort
 endfunction
 
