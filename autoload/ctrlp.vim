@@ -2033,20 +2033,20 @@ fu! ctrlp#setlines(...)
   let g:ctrlp_lines = eval(types[s:itemtype])
 endf
 
-fu! ctrlp#init(type, ...)
-  if exists('s:init') || s:iscmdwin() | retu | en
+function! ctrlp#init(type, ...)
+  if exists('s:init') || s:iscmdwin() | return | endif
   let [s:ermsg, v:errmsg] = [v:errmsg, '']
   let [s:matches, s:init] = [1, 1]
   cal s:Reset(a:0 ? a:1 : {})
-  noa cal s:Open()
+  noautocmd call s:Open()
   cal s:SetWD(a:0 ? a:1 : {})
   cal s:MapNorms()
   cal s:MapSpecs()
   cal ctrlp#setlines(s:settype(a:type))
   cal s:SetDefTxt()
   cal s:BuildPrompt(1)
-  if s:keyloop | cal s:KeyLoop() | en
-endf
+  if s:keyloop | call s:KeyLoop() | endif
+endfunction
 " - Autocmds {{{1
 if has('autocmd')
   aug CtrlPAug
