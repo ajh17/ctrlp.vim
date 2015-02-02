@@ -60,7 +60,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'dotfiles':              ['s:showhidden', 0],
   \ 'follow_symlinks':       ['s:folsym', 0],
   \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
-  \ 'key_loop':              ['s:keyloop', 0],
   \ 'match_func':            ['s:matcher', {}],
   \ 'match_window':          ['s:mw', ''],
   \ 'match_window_bottom':   ['s:mwbottom', 1],
@@ -206,9 +205,6 @@ function! s:opts(...)
   let s:glob = s:showhidden ? '.*\|*' : '*'
   let s:igntype = empty(s:usrign) ? -1 : type(s:usrign)
   let s:lash = ctrlp#utils#lash()
-  if s:keyloop
-    let s:glbs['imd'] = 0
-  en
   " Keymaps
   if type(s:urprtmaps) == 4
     cal extend(s:prtmaps, s:urprtmaps)
@@ -817,26 +813,6 @@ function! s:MapSpecs()
   endfo | endfo
   let s:smapped = s:bufnr
 endfunction
-
-function! s:KeyLoop()
-  let t_ve = &t_ve
-  set t_ve=
-  try
-    wh exists('s:init') && s:keyloop
-      redr
-      let nr = getchar()
-      let chr = !type(nr) ? nr2char(nr) : nr
-      if nr >=# 0x20
-        cal s:PrtFocusMap(chr)
-      el
-        let cmd = matchstr(maparg(chr), ':<C-U>\zs.\+\ze<CR>$')
-        exe ( cmd != '' ? cmd : 'norm '.chr )
-      en
-    endw
-  fina
-    let &t_ve = t_ve
-  endt
-endfunction
 " * Toggling {{{1
 function! s:ToggleFocus()
   let s:focus = !s:focus
@@ -853,19 +829,6 @@ function! s:ToggleByFname()
     let s:byfname = !s:byfname
     let s:mfunc = s:mfunc()
     cal s:PrtSwitcher()
-  en
-endfunction
-
-function! s:ToggleKeyLoop()
-  let s:keyloop = !s:keyloop
-  if exists('+imd')
-    let &imd = !s:keyloop
-  en
-  if s:keyloop
-    let &ut = 0
-    cal s:KeyLoop()
-  elsei has_key(s:glbs, 'ut')
-    let &ut = s:glbs['ut']
   en
 endfunction
 
@@ -1967,7 +1930,6 @@ function! ctrlp#init(type, ...)
   cal s:MapSpecs()
   cal ctrlp#setlines(s:settype(a:type))
   cal s:BuildPrompt(1)
-  if s:keyloop | call s:KeyLoop() | endif
 endfunction
 " - Autocmds {{{1
 if has('autocmd')
