@@ -912,14 +912,6 @@ fu! s:ToggleByFname()
   en
 endf
 
-fu! s:ToggleType(dir)
-  let max = len(g:ctrlp_ext_vars) + 2
-  let next = s:walker(max, s:itemtype, a:dir)
-  cal ctrlp#syntax()
-  cal ctrlp#setlines(next)
-  cal s:PrtSwitcher()
-endf
-
 fu! s:ToggleKeyLoop()
   let s:keyloop = !s:keyloop
   if exists('+imd')
@@ -1242,7 +1234,6 @@ fu! s:OpenNoMarks(md, line)
     let dir = fnamemodify(a:line, ':h')
     if isdirectory(dir)
       cal ctrlp#setdir(dir)
-      cal ctrlp#switchtype(0)
       cal ctrlp#recordhist()
       cal s:PrtClear()
     en
@@ -1354,66 +1345,6 @@ endf
 
 fu! s:compval(...)
   retu a:1 - a:2
-endf
-" Statusline {{{2
-fu! ctrlp#statusline()
-  if !exists('s:statypes')
-    let s:statypes = [
-      \ ['files', 'fil'],
-      \ ]
-    if !empty(g:ctrlp_ext_vars)
-      cal map(copy(g:ctrlp_ext_vars),
-        \ 'add(s:statypes, [ v:val["lname"], v:val["sname"] ])')
-    en
-  en
-  let tps = s:statypes
-  let max = len(tps) - 1
-  let nxt = tps[s:walker(max, s:itemtype,  1)][1]
-  let prv = tps[s:walker(max, s:itemtype, -1)][1]
-  let s:ctype = tps[s:itemtype][0]
-  let focus   = s:focus ? 'prt'  : 'win'
-  let byfname = s:ispath ? s:byfname ? 'file' : 'path' : 'line'
-  let marked  = s:opmul != '0' ?
-    \ exists('s:marked') ? ' <'.s:dismrk().'>' : ' <->' : ''
-  if s:status != {}
-    let argms =
-      \ has_key(s:status, 'arg_type') && s:status['arg_type'] == 'dict' ? [{
-      \ 'focus':   focus,
-      \ 'byfname': byfname,
-      \ 'regex':   s:regexp,
-      \ 'prev':    prv,
-      \ 'item':    s:ctype,
-      \ 'next':    nxt,
-      \ 'marked':  marked,
-      \ }] : [focus, byfname, s:regexp, prv, s:ctype, nxt, marked]
-    let &l:stl = call(s:status['main'], argms, s:status)
-  el
-    let item    = '%#CtrlPMode1# '.s:ctype.' %*'
-    let focus   = '%#CtrlPMode2# '.focus.' %*'
-    let byfname = '%#CtrlPMode1# '.byfname.' %*'
-    let regex   = s:regexp  ? '%#CtrlPMode2# regex %*' : ''
-    let slider  = ' <'.prv.'>={'.item.'}=<'.nxt.'>'
-    let dir     = ' %=%<%#CtrlPMode2# %{getcwd()} %*'
-    let &l:stl  = focus.byfname.regex.slider.marked.dir
-  en
-endf
-
-fu! s:dismrk()
-  retu has('signs') ? len(s:marked) :
-    \ '%<'.join(values(map(copy(s:marked), 'split(v:val, "[\\/]")[-1]')), ', ')
-endf
-
-fu! ctrlp#progress(enum, ...)
-  if has('macunix') || has('mac') | sl 1m | en
-  let txt = a:0 ? '(press ctrl-c to abort)' : ''
-  if s:status != {}
-    let argms = has_key(s:status, 'arg_type') && s:status['arg_type'] == 'dict'
-      \ ? [{ 'str': a:enum }] : [a:enum]
-    let &l:stl = call(s:status['prog'], argms, s:status)
-  el
-    let &l:stl = '%#CtrlPStats# '.a:enum.' %* '.txt.'%=%<%#CtrlPMode2# %{getcwd()} %*'
-  en
-  redraws
 endf
 " *** Paths {{{2
 " Line formatting {{{3
@@ -2259,10 +2190,6 @@ fu! ctrlp#prtclear()
   cal s:PrtClear()
 endf
 
-fu! ctrlp#switchtype(id)
-  cal s:ToggleType(a:id - s:itemtype)
-endf
-
 fu! ctrlp#nosy()
   retu !( has('syntax') && exists('g:syntax_on') )
 endf
@@ -2298,7 +2225,6 @@ fu! ctrlp#init(type, ...)
   cal s:SetWD(a:0 ? a:1 : {})
   cal s:MapNorms()
   cal s:MapSpecs()
-  cal ctrlp#syntax()
   cal ctrlp#setlines(s:settype(a:type))
   cal s:SetDefTxt()
   cal s:BuildPrompt(1)
