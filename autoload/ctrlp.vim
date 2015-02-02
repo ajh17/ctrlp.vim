@@ -2084,7 +2084,6 @@ fu! s:getenv()
 	let s:crfile = bufname('%') == ''
 		\ ? '['.s:crbufnr.'*No Name]' : expand('%:p', 1)
 	let s:crfpath = expand('%:p:h', 1)
-	let s:mrbs = ctrlp#mrufiles#bufs()
 endf
 
 fu! s:lastvisual()

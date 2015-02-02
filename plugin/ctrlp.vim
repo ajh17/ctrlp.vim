@@ -17,5 +17,6 @@ let g:ctrlp_builtins = 2
 command! -nargs=? -complete=dir CtrlP call ctrlp#init(0, { 'dir': <q-args> })
 command! -bar CtrlPCurWD     call ctrlp#init(0, { 'mode': '' })
 
-nnoremap <leader>f <plug>(ctrlp)
+nnoremap <leader>f :CtrlP<CR>
+nnoremap <leader>F :CtrlPCurWD<CR>
 " vim:ts=2:sw=2:sts=2
