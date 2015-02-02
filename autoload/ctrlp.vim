@@ -530,7 +530,6 @@ fu! s:Render(lines, pat)
     setl noma nocul
     exe cur_cmd
     cal s:unmarksigns()
-    if s:dohighlight() | cal clearmatches() | en
     retu
   en
   let s:matched = copy(lines)
@@ -550,10 +549,6 @@ fu! s:Render(lines, pat)
   cal s:remarksigns()
   if exists('s:cline') && s:nolim != 1
     cal cursor(s:cline, 1)
-  en
-  " Highlighting
-  if s:dohighlight()
-    cal s:highlight(pat, s:mathi[1])
   en
 endf
 
@@ -1552,79 +1547,6 @@ fu! ctrlp#setlcdir()
     cal ctrlp#setdir(getcwd(), haslocaldir() ? 'lc!' : 'cd!')
   en
 endf
-" Highlighting {{{2
-fu! ctrlp#syntax()
-  if ctrlp#nosy() | retu | en
-  for [ke, va] in items(s:hlgrps) | cal ctrlp#hicheck('CtrlP'.ke, va) | endfo
-  if synIDattr(synIDtrans(hlID('Normal')), 'bg') !~ '^-1$\|^$'
-    sil! exe 'hi CtrlPLinePre '.( has("gui_running") ? 'gui' : 'cterm' ).'fg=bg'
-  en
-  sy match CtrlPNoEntries '^ == NO ENTRIES ==$'
-  if hlexists('CtrlPLinePre')
-    sy match CtrlPLinePre '^>'
-  en
-endf
-
-fu! s:highlight(pat, grp)
-  if s:matcher != {} | retu | en
-  cal clearmatches()
-  if !empty(a:pat) && s:ispath
-    if s:regexp
-      let pat = substitute(a:pat, '\\\@<!\^', '^> \\zs', 'g')
-      cal matchadd(a:grp, ( s:martcs == '' ? '\c' : '\C' ).pat)
-    el
-      let pat = a:pat
-
-      " get original characters so we can rebuild pat
-      let chars = split(pat, '\[\^\\\?.\]\\{-}')
-
-      " Build a pattern like /a.*b.*c/ from abc (but with .\{-} non-greedy
-      " matchers instead)
-      let pat = join(chars, '.\{-}')
-      " Ensure we match the last version of our pattern
-      let ending = '\(.*'.pat.'\)\@!'
-      " Case sensitive?
-      let beginning = ( s:martcs == '' ? '\c' : '\C' ).'^.*'
-      if s:byfname
-        " Make sure there are no slashes in our match
-        let beginning = beginning.'\([^\/]*$\)\@='
-      end
-
-      for i in range(len(chars))
-        " Surround our current target letter with \zs and \ze so it only
-        " actually matches that one letter, but has all preceding and trailing
-        " letters as well.
-        " \zsa.*b.*c
-        " a\(\zsb\|.*\zsb)\ze.*c
-        let charcopy = copy(chars)
-        if i == 0
-          let charcopy[i] = '\zs'.charcopy[i].'\ze'
-          let middle = join(charcopy, '.\{-}')
-        else
-          let before = join(charcopy[0:i-1], '.\{-}')
-          let after = join(charcopy[i+1:-1], '.\{-}')
-          let c = charcopy[i]
-          " for abc, match either ab.\{-}c or a.*b.\{-}c in that order
-          let cpat = '\(\zs'.c.'\|'.'.*\zs'.c.'\)\ze.*'
-          let middle = before.cpat.after
-        endif
-
-        " Now we matchadd for each letter, the basic form being:
-        " ^.*\zsx\ze.*$, but with our pattern we built above for the letter,
-        " and a negative lookahead ensuring that we only highlight the last
-        " occurrence of our letters. We also ensure that our matcher is case
-        " insensitive or sensitive depending.
-        cal matchadd(a:grp, beginning.middle.ending)
-      endfor
-    en
-
-    cal matchadd('CtrlPLinePre', '^>')
-  en
-endf
-
-fu! s:dohighlight()
-  retu s:mathi[0] && exists('*clearmatches') && !ctrlp#nosy()
-endf
 " Prompt history {{{2
 fu! s:gethistloc()
   let utilcadir = ctrlp#utils#cachedir()
@@ -2188,10 +2110,6 @@ endf
 
 fu! ctrlp#prtclear()
   cal s:PrtClear()
-endf
-
-fu! ctrlp#nosy()
-  retu !( has('syntax') && exists('g:syntax_on') )
 endf
 
 fu! ctrlp#hicheck(grp, defgrp)
