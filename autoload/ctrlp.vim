@@ -445,23 +445,6 @@ fu! s:lsCmd()
     retu pair[1]
   en
 endf
-" - Buffers {{{1
-fu! ctrlp#buffers(...)
-  let ids = sort(filter(range(1, bufnr('$')), 'empty(getbufvar(v:val, "&bt"))'
-    \ .' && getbufvar(v:val, "&bl")'), 's:compmreb')
-  if a:0 && a:1 == 'id'
-    retu ids
-  el
-    let bufs = [[], []]
-    for id in ids
-      let bname = bufname(id)
-      let ebname = bname == ''
-      let fname = fnamemodify(ebname ? '['.id.'*No Name]' : bname, ':.')
-      cal add(bufs[ebname], fname)
-    endfo
-    retu bufs[0] + bufs[1]
-  en
-endf
 " * MatchedItems() {{{1
 fu! s:MatchIt(items, pat, limit, exc)
   let [lines, id] = [[], 0]
@@ -1377,8 +1360,6 @@ fu! ctrlp#statusline()
   if !exists('s:statypes')
     let s:statypes = [
       \ ['files', 'fil'],
-      \ ['buffers', 'buf'],
-      \ ['mru files', 'mru'],
       \ ]
     if !empty(g:ctrlp_ext_vars)
       cal map(copy(g:ctrlp_ext_vars),
