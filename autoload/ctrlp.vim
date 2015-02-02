@@ -2304,10 +2304,7 @@ endf
 fu! ctrlp#setlines(...)
   if a:0 | let s:itemtype = a:1 | en
   cal s:modevar()
-  let types = ['ctrlp#files()', 'ctrlp#buffers()', 'ctrlp#mrufiles#list()']
-  if !empty(g:ctrlp_ext_vars)
-    cal map(copy(g:ctrlp_ext_vars), 'add(types, v:val["init"])')
-  en
+  let types = ['ctrlp#files()']
   let g:ctrlp_lines = eval(types[s:itemtype])
 endf
 
