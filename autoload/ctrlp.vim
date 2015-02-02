@@ -59,7 +59,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'custom_ignore':         ['s:usrign', s:ignore()],
   \ 'dont_split':            ['s:nosplit', 'netrw'],
   \ 'dotfiles':              ['s:showhidden', 0],
-  \ 'extensions':            ['s:extensions', []],
   \ 'follow_symlinks':       ['s:folsym', 0],
   \ 'highlight_match':       ['s:mathi', [1, 'CtrlPMatch']],
   \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
@@ -219,12 +218,6 @@ function! s:opts(...)
   en
   if s:lazy
     cal extend(s:glbs, { 'ut': ( s:lazy > 1 ? s:lazy : 250 ) })
-  en
-  " Extensions
-  if !( exists('extensions') && extensions == s:extensions )
-    for each in s:extensions
-      exe 'ru autoload/ctrlp/'.each.'.vim'
-    endfo
   en
   " Keymaps
   if type(s:urprtmaps) == 4
