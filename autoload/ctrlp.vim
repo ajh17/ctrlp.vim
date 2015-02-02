@@ -2,6 +2,7 @@
 " File:          autoload/ctrlp.vim
 " Description:   Fuzzy file, buffer, mru, tag, etc finder.
 " Author:        Kien Nguyen <github.com/kien>
+" Modified By:   Akshay Hegde <github.com/ajh17>
 " Version:       1.79
 " =============================================================================
 
@@ -274,10 +275,6 @@ fu! s:Open()
   for [ke, va] in items(s:glbs) | if exists('+'.ke)
     sil! exe 'let s:glb_'.ke.' = &'.ke.' | let &'.ke.' = '.string(va)
   en | endfo
-  if s:opmul != '0' && has('signs')
-    sign define ctrlpmark text=+> texthl=CtrlPMark
-    hi def link CtrlPMark Search
-  en
   cal s:setupblank()
 endf
 
@@ -288,7 +285,6 @@ fu! s:Close()
   el
     try | bun!
     cat | clo! | endt
-    cal s:unmarksigns()
   en
   for key in keys(s:glbs) | if exists('+'.key)
     sil! exe 'let &'.key.' = s:glb_'.key
@@ -529,7 +525,6 @@ fu! s:Render(lines, pat)
     cal setline(1, s:offset(lines, height - 1))
     setl noma nocul
     exe cur_cmd
-    cal s:unmarksigns()
     retu
   en
   let s:matched = copy(lines)
@@ -545,8 +540,6 @@ fu! s:Render(lines, pat)
   cal setline(1, s:offset(lines, height))
   setl noma cul
   exe cur_cmd
-  cal s:unmarksigns()
-  cal s:remarksigns()
   if exists('s:cline') && s:nolim != 1
     cal cursor(s:cline, 1)
   en
@@ -1110,9 +1103,6 @@ fu! s:MarkToOpen()
     let key = s:dictindex(s:marked, filpath)
     cal remove(s:marked, key)
     if empty(s:marked) | unl s:marked | en
-    if has('signs')
-      exe 'sign unplace' key 'buffer='.s:bufnr
-    en
   el
     " Add to s:marked and place a new sign
     if exists('s:marked')
@@ -1121,9 +1111,6 @@ fu! s:MarkToOpen()
       let s:marked = extend(s:marked, { key : filpath })
     el
       let [key, s:marked] = [1, { 1 : filpath }]
-    en
-    if has('signs')
-      exe 'sign place' key 'line='.line('.').' name=ctrlpmark buffer='.s:bufnr
     en
   en
   sil! cal ctrlp#statusline()
@@ -1149,7 +1136,6 @@ fu! s:OpenMulti(...)
   if ( s:argmap || !has_marked ) && !a:0
     let md = s:argmaps(md, !has_marked ? 2 : 0)
     if md == 'c'
-      cal s:unmarksigns()
       unl! s:marked
       cal s:BuildPrompt(0)
     elsei !has_marked && md =~ '[axd]'
@@ -1218,7 +1204,6 @@ fu! s:OpenNoMarks(md, line)
       let s:marked = extend(s:marked, { key : fnamemodify(line, ':p') })
       let key += 1
     endfo
-    cal s:remarksigns()
     cal s:BuildPrompt(0)
   elsei a:md == 'x'
     let type = has_key(s:openfunc, 'arg_type') ? s:openfunc['arg_type'] : 'dict'
@@ -1567,28 +1552,6 @@ fu! ctrlp#recordhist()
   if len(hst) > s:maxhst | cal remove(hst, s:maxhst, -1) | en
   cal ctrlp#utils#writecache(hst, s:gethistloc()[0], s:gethistloc()[1])
 endf
-" Signs {{{2
-fu! s:unmarksigns()
-  if !s:dosigns() | retu | en
-  for key in keys(s:marked)
-    exe 'sign unplace' key 'buffer='.s:bufnr
-  endfo
-endf
-
-fu! s:remarksigns()
-  if !s:dosigns() | retu | en
-  for ic in range(1, len(s:lines))
-    let line = s:ispath ? fnamemodify(s:lines[ic - 1], ':p') : s:lines[ic - 1]
-    let key = s:dictindex(s:marked, line)
-    if key > 0
-      exe 'sign place' key 'line='.ic.' name=ctrlpmark buffer='.s:bufnr
-    en
-  endfo
-endf
-
-fu! s:dosigns()
-  retu exists('s:marked') && s:bufnr > 0 && s:opmul != '0' && has('signs')
-endf
 " Lists & Dictionaries {{{2
 fu! s:ifilter(list, str)
   let [rlist, estr] = [[], substitute(a:str, 'v:val', 'each', 'g')]
@@ -1888,7 +1851,6 @@ fu! s:delent(rfunc)
   let [s:force, tbrem] = [1, []]
   if exists('s:marked')
     let tbrem = values(s:marked)
-    cal s:unmarksigns()
     unl s:marked
   en
   if tbrem == [] && ( has('dialog_gui') || has('dialog_con') ) &&
