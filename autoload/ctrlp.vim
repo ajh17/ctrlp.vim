@@ -71,7 +71,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'max_height':            ['s:mxheight', 10],
   \ 'max_history':           ['s:maxhst', exists('+hi') ? &hi : 20],
   \ 'mruf_default_order':    ['s:mrudef', 0],
-  \ 'open_func':             ['s:openfunc', {}],
   \ 'open_multi':            ['s:opmul', '1v'],
   \ 'open_new_file':         ['s:newfop', 'v'],
   \ 'prompt_mappings':       ['s:urprtmaps', 0],
@@ -1003,16 +1002,11 @@ function! s:AcceptSelection(action)
   en
   if empty(line) | retu | en
   " Do something with it
-  if s:openfunc != {} && has_key(s:openfunc, s:ctype)
-    let actfunc = s:openfunc[s:ctype]
-    let type = has_key(s:openfunc, 'arg_type') ? s:openfunc['arg_type'] : 'list'
+  if s:itemtype < 3
+    let [actfunc, type] = ['ctrlp#acceptfile', 'dict']
   el
-    if s:itemtype < 3
-      let [actfunc, type] = ['ctrlp#acceptfile', 'dict']
-    el
-      let [actfunc, exttype] = [s:getextvar('accept'), s:getextvar('act_farg')]
-      let type = exttype == 'dict' ? exttype : 'list'
-    en
+    let [actfunc, exttype] = [s:getextvar('accept'), s:getextvar('act_farg')]
+    let type = exttype == 'dict' ? exttype : 'list'
   en
   let actargs = type == 'dict' ? [{ 'action': md, 'line': line, 'icr': icr }]
     \ : [md, line]
@@ -1165,11 +1159,6 @@ function! s:OpenNoMarks(md, line)
       let key += 1
     endfo
     cal s:BuildPrompt(0)
-  elsei a:md == 'x'
-    let type = has_key(s:openfunc, 'arg_type') ? s:openfunc['arg_type'] : 'dict'
-    let argms = type == 'dict' ? [{ 'action': a:md, 'line': a:line }]
-      \ : [a:md, a:line]
-    cal call(s:openfunc[s:ctype], argms, s:openfunc)
   elsei a:md == 'd'
     let dir = fnamemodify(a:line, ':h')
     if isdirectory(dir)
@@ -1683,10 +1672,6 @@ function! s:argmaps(md, i)
     if !buflisted(bufnr('^'.fnamemodify(ctrlp#getcline(), ':p').'$'))
       let roh[2][1] .= '/h[i]dden'
       let roh[2][2] += ['i']
-    en
-    if s:openfunc != {} && has_key(s:openfunc, s:ctype)
-      let roh[2][1] .= '/e[x]ternal'
-      let roh[2][2] += ['x']
     en
   en
   let str = roh[a:i][0].': [t]ab/[v]ertical/[h]orizontal'.roh[a:i][1].'? '
