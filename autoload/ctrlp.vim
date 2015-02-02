@@ -54,7 +54,6 @@ endf
 " Script local vars {{{2
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ ['g:ctrlp_', 'b:ctrlp_', {
-  \ 'abbrev':                ['s:abbrev', {}],
   \ 'arg_map':               ['s:argmap', 0],
   \ 'buffer_func':           ['s:buffunc', {}],
   \ 'by_filename':           ['s:byfname', 0],
@@ -1786,27 +1785,6 @@ endf
 
 fu! s:getinput(...)
   let [prt, spi] = [s:prompt, ( a:0 ? a:1 : '' )]
-  if s:abbrev != {}
-    let gmd = has_key(s:abbrev, 'gmode') ? s:abbrev['gmode'] : ''
-    let str = ( gmd =~ 't' && !a:0 ) || spi == 'c' ? prt[0] : join(prt, '')
-    if gmd =~ 't' && gmd =~ 'k' && !a:0 && matchstr(str, '.$') =~ '\k'
-      retu join(prt, '')
-    en
-    let [pf, rz] = [( s:byfname() ? 'f' : 'p' ), ( s:regexp ? 'r' : 'z' )]
-    for dict in s:abbrev['abbrevs']
-      let dmd = has_key(dict, 'mode') ? dict['mode'] : ''
-      let pat = escape(dict['pattern'], '~')
-      if ( dmd == '' || ( dmd =~ pf && dmd =~ rz && !a:0 )
-        \ || dmd =~ '['.spi.']' ) && str =~ pat
-        let [str, s:did_exp] = [join(split(str, pat, 1), dict['expanded']), 1]
-      en
-    endfo
-    if gmd =~ 't' && !a:0
-      let prt[0] = str
-    el
-      retu str
-    en
-  en
   retu spi == 'c' ? prt[0] : join(prt, '')
 endf
 
