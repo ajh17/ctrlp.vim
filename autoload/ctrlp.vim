@@ -325,7 +325,7 @@ endf
 " * Files {{{1
 fu! ctrlp#files()
   let cafile = ctrlp#utils#cachefile()
-  if g:ctrlp_newcache || !filereadable(cafile) || s:nocache(cafile)
+  if g:ctrlp_newcache || !filereadable(cafile)
     let [lscmd, s:initcwd, g:ctrlp_allfiles] = [s:lsCmd(), s:dyncwd, []]
     " Get the list of files
     if empty(lscmd)
@@ -343,7 +343,6 @@ fu! ctrlp#files()
     if len(g:ctrlp_allfiles) <= s:compare_lim
       cal sort(g:ctrlp_allfiles, 'ctrlp#complen')
     en
-    cal s:writecache(cafile)
     let catime = getftime(cafile)
   el
     let catime = getftime(cafile)
@@ -1071,7 +1070,6 @@ fu! s:CreateNewFile(...)
   en
   if !exists('optyp') | retu | en
   let [filpath, tail] = [fnamemodify(optyp, ':p'), s:tail()]
-  if !stridx(filpath, s:dyncwd) | cal s:insertcache(str) | en
   cal s:PrtExit()
   let cmd = md == 'r' ? ctrlp#normcmd('e') :
     \ s:newfop =~ '1\|t' || ( a:0 && a:1 == 't' ) || md == 't' ? 'tabe' :
@@ -1974,44 +1972,6 @@ fu! s:mmode()
     \ 's:matchtabe': 'until-last-tab',
     \ }
   retu matchmodes[s:mfunc]
-endf
-" Cache {{{2
-fu! s:writecache(cafile)
-  if ( g:ctrlp_newcache || !filereadable(a:cafile) ) && !s:nocache()
-    cal ctrlp#utils#writecache(g:ctrlp_allfiles)
-    let g:ctrlp_newcache = 0
-  en
-endf
-
-fu! s:nocache(...)
-  if !s:caching
-    retu 1
-  elsei s:caching > 1
-    if !( exists(s:ccex) && !{s:ccex} ) || has_key(s:ficounts, s:dyncwd)
-      retu get(s:ficounts, s:dyncwd, [0, 0])[0] < s:caching
-    elsei a:0 && filereadable(a:1)
-      retu len(ctrlp#utils#readfile(a:1)) < s:caching
-    en
-    retu 1
-  en
-  retu 0
-endf
-
-fu! s:insertcache(str)
-  let [data, g:ctrlp_newcache, str] = [g:ctrlp_allfiles, 1, a:str]
-  if data == [] || strlen(str) <= strlen(data[0])
-    let pos = 0
-  elsei strlen(str) >= strlen(data[-1])
-    let pos = len(data) - 1
-  el
-    let pos = 0
-    for each in data
-      if strlen(each) > strlen(str) | brea | en
-      let pos += 1
-    endfo
-  en
-  cal insert(data, str, pos)
-  cal s:writecache(ctrlp#utils#cachefile())
 endf
 " Extensions {{{2
 fu! s:execextvar(key)
