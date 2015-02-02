@@ -60,7 +60,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'dont_split':            ['s:nosplit', 'netrw'],
   \ 'dotfiles':              ['s:showhidden', 0],
   \ 'follow_symlinks':       ['s:folsym', 0],
-  \ 'highlight_match':       ['s:mathi', [1, 'CtrlPMatch']],
   \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
   \ 'key_loop':              ['s:keyloop', 0],
   \ 'lazy_update':           ['s:lazy', 0],
