@@ -1050,12 +1050,6 @@ endfunction
 function! s:fnesc(...)
   return call('ctrlp#utils#fnesc', a:000)
 endfunction
-
-function! ctrlp#setlcdir()
-  if exists('*haslocaldir')
-    cal ctrlp#setdir(getcwd(), haslocaldir() ? 'lc!' : 'cd!')
-  endif
-endfunction
 " Prompt history {{{2
 function! s:gethistloc()
   let utilcadir = ctrlp#utils#cachedir()
@@ -1351,9 +1345,6 @@ function! s:openfile(cmd, fid, tail, chkmod, ...)
   endif
   if !empty(a:tail)
     sil! norm! zvzz
-  endif
-  if cmd != 'bad'
-    cal ctrlp#setlcdir()
   endif
 endfunction
 
