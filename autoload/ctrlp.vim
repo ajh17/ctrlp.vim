@@ -92,44 +92,44 @@ let s:fpats = {
 " Get the options {{{2
 function! s:opts(...)
   unl! s:usrcmd s:urprtmaps
-for [ke, va] in items(s:opts)
-  let {va[0]} = exists(s:pref.ke) ? {s:pref.ke} : va[1]
-endfor
-unl va
-for [ke, va] in items(s:new_opts)
-  let {va} = {exists(s:pref.ke) ? s:pref.ke : va}
-endfor
-unl va
-for [ke, va] in items(s:lc_opts)
-  if exists(s:bpref.ke)
-    unl {va}
-    let {va} = {s:bpref.ke}
-  endif
-endfor
-" Match window options
-cal s:match_window_opts()
-" One-time values
-if a:0 && a:1 != {}
+  for [ke, va] in items(s:opts)
+    let {va[0]} = exists(s:pref.ke) ? {s:pref.ke} : va[1]
+  endfor
   unl va
-  for [ke, va] in items(a:1)
-    let opke = substitute(ke, '\(\w:\)\?ctrlp_', '', '')
-    if has_key(s:lc_opts, opke)
-      let sva = s:lc_opts[opke]
-      unl {sva}
-      let {sva} = va
+  for [ke, va] in items(s:new_opts)
+    let {va} = {exists(s:pref.ke) ? s:pref.ke : va}
+  endfor
+  unl va
+  for [ke, va] in items(s:lc_opts)
+    if exists(s:bpref.ke)
+      unl {va}
+      let {va} = {s:bpref.ke}
     endif
   endfor
-endif
-for each in ['byfname', 'regexp'] | if exists(each)
-  let s:{each} = {each}
-en | endfor
-  let s:maxdepth = min([s:maxdepth, 100])
-  let s:glob = s:showhidden ? '.*\|*' : '*'
-  let s:lash = ctrlp#utils#lash()
-  " Keymaps
-  if type(s:urprtmaps) == 4
-    cal extend(s:prtmaps, s:urprtmaps)
+  " Match window options
+  cal s:match_window_opts()
+  " One-time values
+  if a:0 && a:1 != {}
+    unl va
+    for [ke, va] in items(a:1)
+      let opke = substitute(ke, '\(\w:\)\?ctrlp_', '', '')
+      if has_key(s:lc_opts, opke)
+        let sva = s:lc_opts[opke]
+        unl {sva}
+        let {sva} = va
+      endif
+    endfor
   endif
+  for each in ['byfname', 'regexp'] | if exists(each)
+    let s:{each} = {each}
+  en | endfor
+let s:maxdepth = min([s:maxdepth, 100])
+let s:glob = s:showhidden ? '.*\|*' : '*'
+let s:lash = ctrlp#utils#lash()
+" Keymaps
+if type(s:urprtmaps) == 4
+  cal extend(s:prtmaps, s:urprtmaps)
+endif
 endfunction
 
 function! s:match_window_opts()
