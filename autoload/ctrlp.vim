@@ -94,18 +94,18 @@ function! s:opts(...)
   unl! s:usrcmd s:urprtmaps
 for [ke, va] in items(s:opts)
   let {va[0]} = exists(s:pref.ke) ? {s:pref.ke} : va[1]
-endfo
+endfor
 unl va
 for [ke, va] in items(s:new_opts)
   let {va} = {exists(s:pref.ke) ? s:pref.ke : va}
-endfo
+endfor
 unl va
 for [ke, va] in items(s:lc_opts)
   if exists(s:bpref.ke)
     unl {va}
     let {va} = {s:bpref.ke}
   en
-endfo
+endfor
 " Match window options
 cal s:match_window_opts()
 " One-time values
@@ -118,11 +118,11 @@ if a:0 && a:1 != {}
       unl {sva}
       let {sva} = va
     en
-  endfo
+  endfor
 en
 for each in ['byfname', 'regexp'] | if exists(each)
   let s:{each} = {each}
-en | endfo
+en | endfor
   let s:maxdepth = min([s:maxdepth, 100])
   let s:glob = s:showhidden ? '.*\|*' : '*'
   let s:lash = ctrlp#utils#lash()
@@ -169,7 +169,7 @@ function! s:Open()
   en
   for [ke, va] in items(s:glbs) | if exists('+'.ke)
     sil! exe 'let s:glb_'.ke.' = &'.ke.' | let &'.ke.' = '.string(va)
-  en | endfo
+  en | endfor
 cal s:setupblank()
 endfunction
 
@@ -182,7 +182,7 @@ function! s:Close()
   en
   for key in keys(s:glbs) | if exists('+'.key)
     sil! exe 'let &'.key.' = s:glb_'.key
-  en | endfo
+  en | endfor
 if exists('s:glb_acd') | let &acd = s:glb_acd | en
 let g:ctrlp_lines = []
 if s:winres[1] >= &lines && s:winres[2] == winnr('$')
@@ -288,7 +288,7 @@ function! s:lsCmd()
       let [markrs, cmdtypes] = [[], values(cmd['types'])]
       for pair in cmdtypes
         cal add(markrs, pair[0])
-      endfo
+      endfor
       let fndroot = s:findroot(s:dyncwd, markrs, 0, 1)
     en
     if fndroot == []
@@ -296,7 +296,7 @@ function! s:lsCmd()
     en
     for pair in cmdtypes
       if pair[0] == fndroot[0] | brea | en
-    endfo
+    endfor
     let s:vcscmd = s:lash == '\'
     retu pair[1]
   en
@@ -313,7 +313,7 @@ function! s:MatchIt(items, pat, limit, exc)
       cal add(lines, item)
     en | cat | brea | endt
     if a:limit > 0 && len(lines) >= a:limit | brea | en
-  endfo
+  endfor
   let s:mdata = [s:dyncwd, s:itemtype, s:regexp, s:sublist(a:items, id, -1)]
   retu lines
 endfunction
@@ -353,7 +353,7 @@ function! s:SplitPattern(str)
     en
     for each in ['^', '$', '.']
       cal map(lst, 'escape(v:val, each)')
-    endfo
+    endfor
   en
   if exists('lst')
     let pat = ''
@@ -635,13 +635,13 @@ function! s:MapNorms()
   let ranges = [32, 33, 125, 126] + range(35, 91) + range(93, 123)
   for each in [34, 92, 124]
     exe printf(cmd, each, pfunc, escape(nr2char(each), '"|\'))
-  endfo
+  endfor
   for each in ranges
     exe printf(cmd, each, pfunc, nr2char(each))
-  endfo
+  endfor
   for each in range(0, 9)
     exe printf(pcmd, each, pfunc, each)
-  endfo
+  endfor
   let s:nmapped = s:bufnr
 endfunction
 
@@ -652,12 +652,12 @@ function! s:MapSpecs()
           \ || &term =~? '\vxterm|<k?vt|gnome|screen|linux|ansi'
       for each in ['\A <up>','\B <down>','\C <right>','\D <left>']
         exe s:lcmap.' <esc>['.each
-      endfo
+      endfor
     en
   en
   for [ke, va] in items(s:prtmaps) | for kp in va
     exe s:lcmap kp ':<c-u>cal <SID>'.ke.'<cr>'
-  endfo | endfo
+  endfo | endfor
 let s:smapped = s:bufnr
 endfunction
 " * Toggling {{{1
@@ -700,7 +700,7 @@ function! s:SetWD(args)
   let spath = pmodes =~ 'd' ? s:dyncwd : pmodes =~ 'w' ? s:cwd : s:crfpath
   for pmode in split(pmodes, '\zs')
     if ctrlp#setpathmode(pmode, spath) | retu | en
-  endfo
+  endfor
 endfunction
 " * AcceptSelection() {{{1
 function! ctrlp#acceptfile(...)
@@ -992,11 +992,11 @@ function! s:findcommon(items, seed)
   for char in split(items[0], '\zs')
     for item in items[1:]
       if item[ic] != char | let brk = 1 | brea | en
-    endfo
+    endfor
     if exists('brk') | brea | en
     let cmn .= char
     let ic += 1
-  endfo
+  endfor
   retu cmn
 endfunction
 " Misc {{{3
@@ -1033,7 +1033,7 @@ function! ctrlp#dirnfile(entries)
     elsei etype == 'file'
       cal add(items[1], each)
     en
-  endfo
+  endfor
   retu items
 endfunction
 
@@ -1070,7 +1070,7 @@ function! s:findroot(curr, mark, depth, type)
         let fnd = 1
         brea
       en
-    endfo
+    endfor
   en
   if fnd
     if !a:type | cal ctrlp#setdir(a:curr) | en
@@ -1151,14 +1151,14 @@ function! s:ifilter(list, str)
         cal add(rlist, each)
       en
     cat | con | endt
-  endfo
+  endfor
   retu rlist
 endfunction
 
 function! s:dictindex(dict, expr)
   for key in keys(a:dict)
     if a:dict[key] == a:expr | retu key | en
-  endfo
+  endfor
   retu -1
 endfunction
 
@@ -1186,9 +1186,9 @@ function! s:buftab(bufnr, md)
     if index(buflist, a:bufnr) >= 0
       for winnr in range(1, tabpagewinnr(tabnr, '$'))
         if buflist[winnr - 1] == a:bufnr | retu [tabnr, winnr] | en
-      endfo
+      endfor
     en
-  endfo
+  endfor
   retu [0, 0]
 endfunction
 
@@ -1196,7 +1196,7 @@ function! s:bufwins(bufnr)
   let winns = 0
   for tabnr in range(1, tabpagenr('$'))
     let winns += count(tabpagebuflist(tabnr), a:bufnr)
-  endfo
+  endfor
   retu winns
 endfunction
 
@@ -1214,7 +1214,7 @@ function! ctrlp#normcmd(cmd, ...)
     if empty(bufname(bufnr)) && empty(getbufvar(bufnr, '&ft'))
       let fstemp = each | brea
     en
-  endfo
+  endfor
   let norwin = empty(norwins) ? 0 : norwins[0]
   if norwin
     if index(norwins, winnr()) < 0
@@ -1399,7 +1399,7 @@ function! s:regexfilter(str)
   let str = a:str
   for key in keys(s:fpats) | if str =~ key
     let str = substitute(str, s:fpats[key], '', 'g')
-  en | endfo
+  en | endfor
 retu str
 endfunction
 
@@ -1507,7 +1507,7 @@ function! s:buildpat(lst)
   let pat = a:lst[0]
   for item in range(1, len(a:lst) - 1)
     let pat .= '[^'.a:lst[item - 1].']\{-}'.a:lst[item]
-  endfo
+  endfor
   retu pat
 endfunction
 
