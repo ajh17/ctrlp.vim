@@ -214,7 +214,7 @@ let g:ctrlp_lines = []
 if s:winres[1] >= &lines && s:winres[2] == winnr('$')
   exe s:winres[0].s:winres[0]
 en
-unl! s:focus s:hisidx s:hstgot s:marked s:statypes s:cline s:init s:savestr
+unl! s:focus s:hisidx s:hstgot s:statypes s:cline s:init s:savestr
       \ s:mrbs s:did_exp
 cal ctrlp#recordhist()
 cal s:execextvar('exit')
@@ -888,12 +888,6 @@ function! s:CreateNewFile(...)
   let str = s:sanstail(str)
   let [base, fname] = s:headntail(str)
   if fname =~ '^[\/]$' | retu | en
-  if exists('s:marked') && len(s:marked)
-    " Use the first marked file's path
-    let path = fnamemodify(values(s:marked)[0], ':p:h')
-    let base = path.s:lash(path).base
-    let str = fnamemodify(base.s:lash.fname, ':.')
-  en
   if base != '' | if isdirectory(ctrlp#utils#mkdir(base))
     let optyp = str | en | el | let optyp = fname
   en
@@ -908,23 +902,6 @@ function! s:CreateNewFile(...)
   cal s:openfile(cmd, filpath, tail, 1)
 endfunction
 
-function! s:OpenNoMarks(md, line)
-  if a:md == 'a'
-    let [s:marked, key] = [{}, 1]
-    for line in s:lines
-      let s:marked = extend(s:marked, { key : fnamemodify(line, ':p') })
-      let key += 1
-    endfo
-    cal s:BuildPrompt(0)
-  elsei a:md == 'd'
-    let dir = fnamemodify(a:line, ':h')
-    if isdirectory(dir)
-      cal ctrlp#setdir(dir)
-      cal ctrlp#recordhist()
-      cal s:PrtClear()
-    en
-  en
-endfunction
 " ** Helper functions {{{1
 " Sorting {{{2
 function! ctrlp#complen(...)
@@ -1506,10 +1483,6 @@ endfunction
 function! s:delent(rfunc)
   if a:rfunc == '' | retu | en
   let [s:force, tbrem] = [1, []]
-  if exists('s:marked')
-    let tbrem = values(s:marked)
-    unl s:marked
-  en
   if tbrem == [] && ( has('dialog_gui') || has('dialog_con') ) &&
         \ confirm("Wipe all entries?", "&OK\n&Cancel") != 1
     unl s:force
@@ -1653,14 +1626,6 @@ function! ctrlp#getcline()
   let [linenr, offset] = [line('.'), ( s:offset > 0 ? s:offset : 0 )]
   retu !empty(s:lines) && !( offset && linenr <= offset )
         \ ? s:lines[linenr - 1 - offset] : ''
-endfunction
-
-function! ctrlp#getmarkedlist()
-  retu exists('s:marked') ? values(s:marked) : []
-endfunction
-
-function! ctrlp#clearmarkedlist()
-  let s:marked = {}
 endfunction
 
 function! ctrlp#exit()
