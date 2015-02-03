@@ -93,9 +93,6 @@ let s:fpats = {
 " Get the options {{{2
 function! s:opts(...)
   unl! s:usrcmd s:urprtmaps
-  for each in ['byfname', 'regexp', 'extensions'] | if exists('s:'.each)
-    let {each} = s:{each}
-  en | endfo
 for [ke, va] in items(s:opts)
   let {va[0]} = exists(s:pref.ke) ? {s:pref.ke} : va[1]
 endfo
