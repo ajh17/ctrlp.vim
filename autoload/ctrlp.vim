@@ -123,7 +123,6 @@ en
 for each in ['byfname', 'regexp'] | if exists(each)
   let s:{each} = {each}
 en | endfo
-  if !exists('g:ctrlp_newcache') | let g:ctrlp_newcache = 0 | en
   let s:maxdepth = min([s:maxdepth, 100])
   let s:glob = s:showhidden ? '.*\|*' : '*'
   let s:lash = ctrlp#utils#lash()
@@ -206,7 +205,7 @@ endfunction
 " * Files {{{1
 function! ctrlp#files()
   let cafile = ctrlp#utils#cachefile()
-  if g:ctrlp_newcache || !filereadable(cafile)
+  if !filereadable(cafile)
     let [lscmd, s:initcwd, g:ctrlp_allfiles] = [s:lsCmd(), s:dyncwd, []]
     " Get the list of files
     if empty(lscmd)
