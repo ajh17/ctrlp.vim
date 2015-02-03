@@ -599,12 +599,6 @@ function! s:PrtFocusMap(char)
   cal call(( s:focus ? 's:PrtAdd' : 's:PrtSelectJump' ), [a:char])
 endfunction
 
-function! s:PrtDeleteMRU()
-  if s:itemtype == 2
-    cal s:delent('ctrlp#mrufiles#remove')
-  endif
-endfunction
-
 function! s:PrtExit()
   if bufnr('%') == s:bufnr && bufname('%') == 'ControlP'
     noa cal s:Close()
