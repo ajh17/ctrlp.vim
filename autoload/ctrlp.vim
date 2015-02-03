@@ -371,12 +371,6 @@ function! s:Render(lines, pat)
     return
   endif
   let s:matched = copy(lines)
-  " Sorting
-  if !s:nosort()
-    let s:compat = s:martcs.pat
-    cal sort(lines, 's:mixedsort')
-    unl s:compat
-  endif
   if s:mw_order == 'btt' | cal reverse(lines) | endif
   let s:lines = copy(lines)
   cal map(lines, 's:formatline(v:val)')
@@ -878,40 +872,6 @@ endfunction
 
 function! s:shortest(lens)
   return min(map(values(a:lens), 'v:val[0]'))
-endfunction
-
-function! s:mixedsort(...)
-  if s:itemtype == 1
-    let pat = '[\/]\?\[\d\+\*No Name\]$'
-    if a:1 =~# pat && a:2 =~# pat | return 0
-    elsei a:1 =~# pat | return 1
-    elsei a:2 =~# pat | return -1 | endif
-  endif
-  let [cln, cml] = [ctrlp#complen(a:1, a:2), s:compmatlen(a:1, a:2)]
-  if s:ispath
-    let ms = []
-    if s:res_count < 21
-      let ms += [s:compfnlen(a:1, a:2)]
-      if s:itemtype !~ '^[12]$' | let ms += [s:comptime(a:1, a:2)] | endif
-      if !s:itemtype | let ms += [s:comparent(a:1, a:2)] | endif
-    endif
-    if s:itemtype =~ '^[12]$'
-      let ms += [s:compmref(a:1, a:2)]
-      let cln = cml ? cln : 0
-    endif
-    let ms += [cml, 0, 0, 0]
-    let mp = call('s:multipliers', ms[:3])
-    return cln + ms[0] * mp[0] + ms[1] * mp[1] + ms[2] * mp[2] + ms[3] * mp[3]
-  endif
-  return cln + cml * 2
-endfunction
-
-function! s:multipliers(...)
-  let mp0 = !a:1 ? 0 : 2
-  let mp1 = !a:2 ? 0 : 1 + ( !mp0 ? 1 : mp0 )
-  let mp2 = !a:3 ? 0 : 1 + ( !( mp0 + mp1 ) ? 1 : ( mp0 + mp1 ) )
-  let mp3 = !a:4 ? 0 : 1 + ( !( mp0 + mp1 + mp2 ) ? 1 : ( mp0 + mp1 + mp2 ) )
-  return [mp0, mp1, mp2, mp3]
 endfunction
 
 function! s:compval(...)
