@@ -11,7 +11,6 @@
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ ['g:ctrlp_', 'b:ctrlp_', {
       \ 'by_filename':           ['s:byfname', 0],
-      \ 'dont_split':            ['s:nosplit', 'netrw'],
       \ 'dotfiles':              ['s:showhidden', 0],
       \ 'follow_symlinks':       ['s:folsym', 0],
       \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
@@ -32,7 +31,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'working_path_mode':     ['s:pathmode', 'ra'],
       \ }, {
       \ 'regexp':                's:regexp',
-      \ 'reuse_window':          's:nosplit',
       \ 'show_hidden':           's:showhidden',
       \ 'switch_buffer':         's:jmptobuf',
       \ }, {
@@ -1162,7 +1160,7 @@ function! s:nonamecond(str, filpath)
 endfunction
 
 function! ctrlp#normcmd(cmd, ...)
-  if a:0 < 2 && s:nosplit() | return a:cmd | endif
+  if a:0 < 2 | return a:cmd | endif
   let norwins = filter(range(1, winnr('$')),
         \ 'empty(getbufvar(winbufnr(v:val), "&bt"))')
   for each in norwins
@@ -1184,10 +1182,6 @@ endfunction
 function! ctrlp#modfilecond(w)
   return &mod && !&hid && &bh != 'hide' && s:bufwins(bufnr('%')) == 1 && !&cf &&
         \ ( ( !&awa && a:w ) || filewritable(fnamemodify(bufname('%'), ':p')) != 1 )
-endfunction
-
-function! s:nosplit()
-  return !empty(s:nosplit) && match([bufname('%'), &l:ft, &l:bt], s:nosplit) >= 0
 endfunction
 
 function! s:setupblank()
