@@ -1137,29 +1137,6 @@ function! ctrlp#recordhist()
   cal ctrlp#utils#writecache(hst, s:gethistloc()[0], s:gethistloc()[1])
 endfunction
 " Lists & Dictionaries {{{2
-function! s:ifilter(list, str)
-  let [rlist, estr] = [[], substitute(a:str, 'v:val', 'each', 'g')]
-  for each in a:list
-    try
-      if eval(estr)
-        cal add(rlist, each)
-      endif
-    cat | con | endt
-  endfor
-  return rlist
-endfunction
-
-function! s:dictindex(dict, expr)
-  for key in keys(a:dict)
-    if a:dict[key] == a:expr | return key | endif
-  endfor
-  return -1
-endfunction
-
-function! s:vacantdict(dict)
-  return filter(range(1, max(keys(a:dict))), '!has_key(a:dict, v:val)')
-endfunction
-
 function! s:sublist(l, s, e)
   return v:version > 701 ? a:l[(a:s):(a:e)] : s:sublist7071(a:l, a:s, a:e)
 endfunction
