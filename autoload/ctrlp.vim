@@ -215,6 +215,9 @@ function! ctrlp#files()
     endif
     " Remove base directory
     cal ctrlp#rmbasedir(g:ctrlp_allfiles)
+    if len(g:ctrlp_allfiles) <= s:compare_lim
+      cal sort(g:ctrlp_allfiles, 'ctrlp#complen')
+    endif
     let catime = getftime(cafile)
   el
     let catime = getftime(cafile)
@@ -796,6 +799,78 @@ function! s:CreateNewFile(...)
 endfunction
 
 " ** Helper functions {{{1
+" Sorting {{{2
+function! ctrlp#complen(...)
+  " By length
+  let [len1, len2] = [strlen(a:1), strlen(a:2)]
+  return len1 == len2 ? 0 : len1 > len2 ? 1 : -1
+endfunction
+
+function! s:compmatlen(...)
+  " By match length
+  let mln1 = s:shortest(s:matchlens(a:1, s:compat))
+  let mln2 = s:shortest(s:matchlens(a:2, s:compat))
+  return mln1 == mln2 ? 0 : mln1 > mln2 ? 1 : -1
+endfunction
+
+function! s:comptime(...)
+  " By last modified time
+  let [time1, time2] = [getftime(a:1), getftime(a:2)]
+  return time1 == time2 ? 0 : time1 < time2 ? 1 : -1
+endfunction
+
+function! s:compmreb(...)
+  " By last entered time (bufnr)
+  let [id1, id2] = [index(s:mrbs, a:1), index(s:mrbs, a:2)]
+  return id1 == id2 ? 0 : id1 > id2 ? 1 : -1
+endfunction
+
+function! s:compmref(...)
+  " By last entered time (MRU)
+  let [id1, id2] = [index(g:ctrlp_lines, a:1), index(g:ctrlp_lines, a:2)]
+  return id1 == id2 ? 0 : id1 > id2 ? 1 : -1
+endfunction
+
+function! s:comparent(...)
+  " By same parent dir
+  if !stridx(s:crfpath, s:dyncwd)
+    let [as1, as2] = [s:dyncwd.s:lash().a:1, s:dyncwd.s:lash().a:2]
+    let [loc1, loc2] = [s:getparent(as1), s:getparent(as2)]
+    if loc1 == s:crfpath && loc2 != s:crfpath | return -1 | endif
+    if loc2 == s:crfpath && loc1 != s:crfpath | return 1  | endif
+    return 0
+  endif
+  return 0
+endfunction
+
+function! s:compfnlen(...)
+  " By filename length
+  let len1 = strlen(split(a:1, s:lash)[-1])
+  let len2 = strlen(split(a:2, s:lash)[-1])
+  return len1 == len2 ? 0 : len1 > len2 ? 1 : -1
+endfunction
+
+function! s:matchlens(str, pat, ...)
+  if empty(a:pat) || index(['^', '$'], a:pat) >= 0 | return {} | endif
+  let st   = a:0 ? a:1 : 0
+  let lens = a:0 >= 2 ? a:2 : {}
+  let nr   = a:0 >= 3 ? a:3 : 0
+  if nr > 20 | return {} | endif
+  if match(a:str, a:pat, st) >= 0
+    let [mst, mnd] = [matchstr(a:str, a:pat, st), matchend(a:str, a:pat, st)]
+    let lens = extend(lens, { nr : [strlen(mst), mst] })
+    let lens = s:matchlens(a:str, a:pat, mnd, lens, nr + 1)
+  endif
+  return lens
+endfunction
+
+function! s:shortest(lens)
+  return min(map(values(a:lens), 'v:val[0]'))
+endfunction
+
+function! s:compval(...)
+  return a:1 - a:2
+endfunction
 " *** Paths {{{2
 " Line formatting {{{3
 function! s:formatline(str)
