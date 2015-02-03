@@ -146,7 +146,7 @@ endfunction
 function! s:Open()
   cal s:getenv()
   cal s:execextvar('enter')
-  sil! exe 'keepa' ( s:mw_pos == 'top' ? 'to' : 'bo' ) '1new ControlP'
+  silent! exe 'keepa' ( s:mw_pos == 'top' ? 'to' : 'bo' ) '1new ControlP'
   let [s:bufnr, s:winw] = [bufnr('%'), winwidth(0)]
   let [s:focus, s:prompt] = [1, ['', '', '']]
   abc <buffer>
@@ -155,7 +155,7 @@ function! s:Open()
     let s:hstry = empty(hst) || !s:maxhst ? [''] : hst
   endif
   for [ke, va] in items(s:glbs) | if exists('+'.ke)
-    sil! exe 'let s:glb_'.ke.' = &'.ke.' | let &'.ke.' = '.string(va)
+    silent! exe 'let s:glb_'.ke.' = &'.ke.' | let &'.ke.' = '.string(va)
   en | endfor
 cal s:setupblank()
 endfunction
@@ -168,7 +168,7 @@ function! s:Close()
     cat | clo! | endt
   endif
   for key in keys(s:glbs) | if exists('+'.key)
-    sil! exe 'let &'.key.' = s:glb_'.key
+    silent! exe 'let &'.key.' = s:glb_'.key
   en | endfor
 if exists('s:glb_acd') | let &acd = s:glb_acd | endif
 let g:ctrlp_lines = []
@@ -200,7 +200,7 @@ function! ctrlp#files()
         cal s:GlobPath(s:fnesc(s:dyncwd, 'g', ','), 0)
       endif
     el
-      sil! cal ctrlp#progress('Indexing...')
+      silent! cal ctrlp#progress('Indexing...')
       try | cal s:UserCmd(lscmd)
       cat | return [] | endt
     endif
@@ -227,7 +227,7 @@ function! s:GlobPath(dirs, depth)
   let [dnf, depth] = [ctrlp#dirnfile(entries), a:depth + 1]
   cal extend(g:ctrlp_allfiles, dnf[1])
   if !empty(dnf[0]) && !s:maxf(len(g:ctrlp_allfiles)) && depth <= s:maxdepth
-    sil! cal ctrlp#progress(len(g:ctrlp_allfiles), 1)
+    silent! cal ctrlp#progress(len(g:ctrlp_allfiles), 1)
     cal s:GlobPath(join(map(dnf[0], 's:fnesc(v:val, "g", ",")'), ','), depth)
   endif
 endfunction
@@ -347,7 +347,7 @@ function! s:Render(lines, pat)
   let pat = s:byfname() ? split(a:pat, '^[^;]\+\\\@<!\zs;', 1)[0] : a:pat
   let cur_cmd = 'keepj norm! '.( s:mw_order == 'btt' ? 'G' : 'gg' ).'1|'
   " Setup the match window
-  sil! exe '%d _ | res' height
+  silent! exe '%d _ | res' height
   " Print the new items
   if empty(lines)
     let [s:matched, s:lines] = [[], []]
@@ -390,7 +390,7 @@ function! s:Update(str)
 endfunction
 
 function! s:ForceUpdate()
-  sil! cal s:Update(escape(s:getinput(), '\'))
+  silent! cal s:Update(escape(s:getinput(), '\'))
 endfunction
 
 function! s:BuildPrompt(upd)
@@ -729,7 +729,7 @@ function! s:SpecInputs(str)
   elsei a:str == '?'
     cal s:PrtExit()
     let hlpwin = &columns > 159 ? '| vert res 80' : ''
-    sil! exe 'bo vert h ctrlp-mappings' hlpwin '| norm! 0'
+    silent! exe 'bo vert h ctrlp-mappings' hlpwin '| norm! 0'
     return 1
   endif
   return 0
@@ -1039,7 +1039,7 @@ endfunction
 
 function! ctrlp#setdir(path, ...)
   let cmd = a:0 ? a:1 : 'lc!'
-  sil! exe cmd s:fnesc(a:path, 'c')
+  silent! exe cmd s:fnesc(a:path, 'c')
   let [s:crfilerel, s:dyncwd] = [fnamemodify(s:crfile, ':.'), getcwd()]
 endfunction
 " Fallbacks {{{3
@@ -1142,8 +1142,8 @@ endfunction
 
 function! s:iscmdwin()
   let ermsg = v:errmsg
-  sil! noa winc p
-  sil! noa winc p
+  silent! noa winc p
+  silent! noa winc p
   let [v:errmsg, ermsg] = [ermsg, v:errmsg]
   return ermsg =~ '^E11:'
 endfunction
@@ -1276,7 +1276,7 @@ endfunction
 
 function! ctrlp#j2l(nr)
   exe 'norm!' a:nr.'G'
-  sil! norm! zvzz
+  silent! norm! zvzz
 endfunction
 
 function! s:maxf(len)
@@ -1324,7 +1324,7 @@ function! s:lastvisual()
   let cview = winsaveview()
   let [ovreg, ovtype] = [getreg('v'), getregtype('v')]
   let [oureg, outype] = [getreg('"'), getregtype('"')]
-  sil! norm! gv"vy
+  silent! norm! gv"vy
   let selected = s:regisfilter('v')
   cal setreg('v', ovreg, ovtype)
   cal setreg('"', oureg, outype)
@@ -1344,7 +1344,7 @@ function! s:openfile(cmd, fid, tail, chkmod, ...)
     cal ctrlp#j2l(j2l)
   endif
   if !empty(a:tail)
-    sil! norm! zvzz
+    silent! norm! zvzz
   endif
 endfunction
 
