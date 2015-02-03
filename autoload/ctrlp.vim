@@ -683,12 +683,7 @@ function! ctrlp#acceptfile(...)
     let [filpath, bufnr, useb] = [line, line, 1]
   el
     let filpath = fnamemodify(line, ':p')
-    if s:nonamecond(line, filpath)
-      let bufnr = str2nr(matchstr(line, '[\/]\?\[\zs\d\+\ze\*No Name\]$'))
-      let [filpath, useb] = [bufnr, 1]
-    el
-      let bufnr = bufnr('^'.filpath.'$')
-    endif
+    let bufnr = bufnr('^'.filpath.'$')
   endif
   cal s:PrtExit()
   let tail = s:tail()
@@ -807,9 +802,7 @@ function! s:formatline(str)
   let str = a:str
   if s:itemtype == 1
     let filpath = fnamemodify(str, ':p')
-    let bufnr = s:nonamecond(str, filpath)
-          \ ? str2nr(matchstr(str, '[\/]\?\[\zs\d\+\ze\*No Name\]$'))
-          \ : bufnr('^'.filpath.'$')
+    let bufnr = bufnr('^'.filpath.'$')
     let idc = ( bufnr == bufnr('#') ? '#' : '' )
           \ . ( getbufvar(bufnr, '&ma') ? '' : '-' )
           \ . ( getbufvar(bufnr, '&ro') ? '=' : '' )
@@ -1023,19 +1016,6 @@ function! s:buftab(bufnr, md)
   return [0, 0]
 endfunction
 
-function! s:bufwins(bufnr)
-  let winns = 0
-  for tabnr in range(1, tabpagenr('$'))
-    let winns += count(tabpagebuflist(tabnr), a:bufnr)
-  endfor
-  return winns
-endfunction
-
-function! s:nonamecond(str, filpath)
-  return a:str =~ '[\/]\?\[\d\+\*No Name\]$' && !filereadable(a:filpath)
-        \ && bufnr('^'.a:filpath.'$') < 1
-endfunction
-
 function! ctrlp#normcmd(cmd, ...)
   if a:0 < 2 | return a:cmd | endif
   let norwins = filter(range(1, winnr('$')),
@@ -1057,7 +1037,7 @@ function! ctrlp#normcmd(cmd, ...)
 endfunction
 
 function! ctrlp#modfilecond(w)
-  return &mod && !&hid && &bh != 'hide' && s:bufwins(bufnr('%')) == 1 && !&cf &&
+  return &mod && !&hid && &bh != 'hide' && !&cf &&
         \ ( ( !&awa && a:w ) || filewritable(fnamemodify(bufname('%'), ':p')) != 1 )
 endfunction
 
