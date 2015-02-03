@@ -1636,12 +1636,6 @@ function! ctrlp#prtclear()
   cal s:PrtClear()
 endfunction
 
-function! ctrlp#hicheck(grp, defgrp)
-  if !hlexists(a:grp)
-    exe 'hi link' a:grp a:defgrp
-  en
-endfunction
-
 function! ctrlp#call(func, ...)
   retu call(a:func, a:000)
 endfunction
