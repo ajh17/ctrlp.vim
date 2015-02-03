@@ -89,26 +89,7 @@ let s:fpats = {
       \ '^\S\\?$': '\\?',
       \ }
 
-" Keypad
-let s:kprange = {
-      \ 'Plus': '+',
-      \ 'Minus': '-',
-      \ 'Divide': '/',
-      \ 'Multiply': '*',
-      \ 'Point': '.',
-      \ }
 
-" Highlight groups
-let s:hlgrps = {
-      \ 'NoEntries': 'Error',
-      \ 'Mode1': 'Character',
-      \ 'Mode2': 'LineNr',
-      \ 'Stats': 'Function',
-      \ 'Match': 'Identifier',
-      \ 'PrtBase': 'Comment',
-      \ 'PrtText': 'Normal',
-      \ 'PrtCursor': 'Constant',
-      \ }
 " Get the options {{{2
 function! s:opts(...)
   unl! s:usrcmd s:urprtmaps
@@ -695,9 +676,6 @@ function! s:MapNorms()
   endfo
   for each in range(0, 9)
     exe printf(pcmd, each, pfunc, each)
-  endfo
-  for [ke, va] in items(s:kprange)
-    exe printf(pcmd, ke, pfunc, va)
   endfo
   let s:nmapped = s:bufnr
 endfunction
