@@ -65,14 +65,11 @@ let [s:lcmap, s:prtmaps] = ['nn <buffer> <silent>', {
   \ 'ToggleRegex()':        ['<c-r>'],
   \ 'ToggleByFname()':      ['<c-d>'],
   \ 'PrtExpandDir()':       ['<tab>'],
-  \ 'PrtInsert("c")':       ['<MiddleMouse>', '<insert>'],
-  \ 'PrtInsert()':          ['<c-\>'],
   \ 'PrtCurStart()':        ['<c-a>'],
   \ 'PrtCurEnd()':          ['<c-e>'],
   \ 'PrtCurLeft()':         ['<c-h>', '<left>', '<c-^>'],
   \ 'PrtCurRight()':        ['<c-l>', '<right>'],
   \ 'CreateNewFile()':      ['<c-y>'],
-  \ 'OpenMulti()':          ['<c-o>'],
   \ 'PrtExit()':            ['<esc>', '<c-c>', '<c-g>'],
   \ }]
 
@@ -537,29 +534,6 @@ function! s:PrtDeleteWord()
   cal s:BuildPrompt(1)
 endfunction
 
-function! s:PrtInsert(...)
-  if !s:focus | retu | en
-  let type = !a:0 ? '' : a:1
-  if !a:0
-    let type = s:insertstr()
-    if type == 'cancel' | retu | en
-  en
-  if type ==# 'r'
-    let regcont = s:getregs()
-    if regcont < 0 | retu | en
-  en
-  unl! s:hstgot
-  let s:act_add = 1
-  let s:prompt[0] .= type ==# 'w' ? s:crword
-    \ : type ==# 'f' ? s:crgfile
-    \ : type ==# 's' ? s:regisfilter('/')
-    \ : type ==# 'v' ? s:crvisual
-    \ : type ==# 'c' ? s:regisfilter('+')
-    \ : type ==# 'r' ? regcont : ''
-  cal s:BuildPrompt(1)
-  unl s:act_add
-endfunction
-
 function! s:PrtExpandDir()
   if !s:focus | retu | en
   let str = s:getinput('c')
@@ -882,7 +856,6 @@ endfunction
 function! s:AcceptSelection(action)
   let [md, icr] = [a:action[0], match(a:action, 'r') >= 0]
   let subm = icr || ( !icr && md == 'e' )
-  if !subm && s:OpenMulti(md) != -1 | retu | en
   let str = s:getinput()
   if subm | if s:SpecInputs(str) | retu | en | en
   " Get the selected line
