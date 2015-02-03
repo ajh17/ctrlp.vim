@@ -197,20 +197,6 @@ let v:errmsg = s:ermsg
 ec
 endfunction
 " * Clear caches {{{1
-function! ctrlp#clr(...)
-  let [s:matches, g:ctrlp_new{ a:0 ? a:1 : 'cache' }] = [1, 1]
-endfunction
-
-function! ctrlp#clra()
-  let cadir = ctrlp#utils#cachedir()
-  if isdirectory(cadir)
-    let cafiles = split(s:glbpath(s:fnesc(cadir, 'g', ','), '**', 1), "\n")
-    let eval = '!isdirectory(v:val) && v:val !~ ''\v[\/]cache[.a-z]+$|\.log$'''
-    sil! cal map(s:ifilter(cafiles, eval), 'delete(v:val)')
-  en
-  cal ctrlp#clr()
-endfunction
-
 function! s:Reset(args)
   let opts = has_key(a:args, 'opts') ? [a:args['opts']] : []
   cal call('s:opts', opts)
@@ -612,22 +598,6 @@ endfunction
 " Misc {{{2
 function! s:PrtFocusMap(char)
   cal call(( s:focus ? 's:PrtAdd' : 's:PrtSelectJump' ), [a:char])
-endfunction
-
-function! s:PrtClearCache()
-  if s:itemtype == 0
-    cal ctrlp#clr()
-  elsei s:itemtype > 2
-    cal ctrlp#clr(s:statypes[s:itemtype][1])
-  en
-  if s:itemtype == 2
-    let g:ctrlp_lines = ctrlp#mrufiles#refresh()
-  el
-    cal ctrlp#setlines()
-  en
-  let s:force = 1
-  cal s:BuildPrompt(1)
-  unl s:force
 endfunction
 
 function! s:PrtDeleteMRU()
