@@ -1072,17 +1072,9 @@ function! ctrlp#recordhist()
 endfunction
 " Lists & Dictionaries {{{2
 function! s:sublist(l, s, e)
-  return v:version > 701 ? a:l[(a:s):(a:e)] : s:sublist7071(a:l, a:s, a:e)
+  return a:l[(a:s):(a:e)]
 endfunction
 
-function! s:sublist7071(l, s, e)
-  let [newlist, id, ae] = [[], a:s, a:e == -1 ? len(a:l) - 1 : a:e]
-  wh id <= ae
-    cal add(newlist, get(a:l, id))
-    let id += 1
-  endw
-  return newlist
-endfunction
 " Buffers {{{2
 function! s:buftab(bufnr, md)
   for tabnr in range(1, tabpagenr('$'))
@@ -1123,11 +1115,9 @@ function! ctrlp#modfilecond(w)
 endfunction
 
 function! s:setupblank()
-  setl noswf nonu nobl nowrap nolist nospell nocuc wfh
-  setl fdc=0 fdl=99 tw=0 bt=nofile bh=unload
-  if v:version > 702
-    setl nornu noudf cc=0
-  endif
+  setlocal noswapfile nonumber nobuflisted nowrap nolist nospell nocursorcolumn winfixheight
+  setlocal foldcolumn=0 foldlevel=99 textwidth=0 buftype=nofile bufhidden=unload
+  setlocal norelativenumber noundofile colorcolumn=0
 endfunction
 
 function! s:leavepre()
