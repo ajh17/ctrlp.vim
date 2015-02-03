@@ -27,7 +27,7 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'root_markers':          ['s:rmarkers', []],
       \ 'split_window':          ['s:splitwin', 0],
       \ 'tabpage_position':      ['s:tabpage', 'ac'],
-      \ 'user_command':          ['s:usrcmd', ''],
+      \ 'user_command':          ['s:usrcmd', 'ag %s -l --nocolor --hidden -g ""'],
       \ 'working_path_mode':     ['s:pathmode', 'ra'],
       \ }, {
       \ 'regexp':                's:regexp',
