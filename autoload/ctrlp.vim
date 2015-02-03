@@ -7,55 +7,10 @@
 " =============================================================================
 
 " ** Static variables {{{1
-" s:ignore() {{{2
-function! s:ignore()
-  let igdirs = [
-    \ '\.git',
-    \ '\.hg',
-    \ '\.svn',
-    \ '_darcs',
-    \ '\.bzr',
-    \ '\.cdv',
-    \ '\~\.dep',
-    \ '\~\.dot',
-    \ '\~\.nib',
-    \ '\~\.plst',
-    \ '\.pc',
-    \ '_MTN',
-    \ 'blib',
-    \ 'CVS',
-    \ 'RCS',
-    \ 'SCCS',
-    \ '_sgbak',
-    \ 'autom4te\.cache',
-    \ 'cover_db',
-    \ '_build',
-    \ ]
-  let igfiles = [
-    \ '\~$',
-    \ '#.+#$',
-    \ '[._].*\.swp$',
-    \ 'core\.\d+$',
-    \ '\.exe$',
-    \ '\.so$',
-    \ '\.bak$',
-    \ '\.png$',
-    \ '\.jpg$',
-    \ '\.gif$',
-    \ '\.zip$',
-    \ '\.rar$',
-    \ '\.tar\.gz$',
-    \ ]
-  retu {
-    \ 'dir': '\v[\/]('.join(igdirs, '|').')$',
-    \ 'file': '\v'.join(igfiles, '|'),
-    \ }
-endfunction
 " Script local vars {{{2
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ ['g:ctrlp_', 'b:ctrlp_', {
   \ 'by_filename':           ['s:byfname', 0],
-  \ 'custom_ignore':         ['s:usrign', s:ignore()],
   \ 'dont_split':            ['s:nosplit', 'netrw'],
   \ 'dotfiles':              ['s:showhidden', 0],
   \ 'follow_symlinks':       ['s:folsym', 0],
@@ -161,7 +116,7 @@ let s:hlgrps = {
   \ }
 " Get the options {{{2
 function! s:opts(...)
-  unl! s:usrign s:usrcmd s:urprtmaps
+  unl! s:usrcmd s:urprtmaps
   for each in ['byfname', 'regexp', 'extensions'] | if exists('s:'.each)
     let {each} = s:{each}
   en | endfo
@@ -199,7 +154,6 @@ function! s:opts(...)
   if !exists('g:ctrlp_newcache') | let g:ctrlp_newcache = 0 | en
   let s:maxdepth = min([s:maxdepth, 100])
   let s:glob = s:showhidden ? '.*\|*' : '*'
-  let s:igntype = empty(s:usrign) ? -1 : type(s:usrign)
   let s:lash = ctrlp#utils#lash()
   " Keymaps
   if type(s:urprtmaps) == 4
@@ -299,7 +253,6 @@ function! ctrlp#files()
     " Get the list of files
     if empty(lscmd)
       if !ctrlp#igncwd(s:dyncwd)
-        cal s:InitCustomFuncs()
         cal s:GlobPath(s:fnesc(s:dyncwd, 'g', ','), 0)
       en
     el
@@ -323,12 +276,6 @@ function! ctrlp#files()
   en
   cal extend(s:ficounts, { s:dyncwd : [len(g:ctrlp_allfiles), catime] })
   retu g:ctrlp_allfiles
-endfunction
-
-function! s:InitCustomFuncs()
-  if s:igntype == 4 && has_key(s:usrign, 'func-init') && s:usrign['func-init'] != ''
-    exe call(s:usrign['func-init'], [])
-  en
 endfunction
 
 function! s:GlobPath(dirs, depth)
@@ -362,9 +309,6 @@ function! s:UserCmd(lscmd)
     cal map(g:ctrlp_allfiles, 'tr(v:val, "/", "\\")')
   en
   if do_ign
-    if !empty(s:usrign)
-      let g:ctrlp_allfiles = ctrlp#dirnfile(g:ctrlp_allfiles)[1]
-    en
     if &wig != ''
       cal filter(g:ctrlp_allfiles, 'glob(v:val) != ""')
     en
@@ -1188,16 +1132,10 @@ function! s:ispathitem()
   retu s:itemtype < 3 || ( s:itemtype > 2 && s:getextvar('type') == 'path' )
 endfunction
 
-function! ctrlp#igncwd(cwd)
-  retu ctrlp#utils#glob(a:cwd, 0) == '' ||
-    \ ( s:igntype >= 0 && s:usrign(a:cwd, getftype(a:cwd)) )
-endfunction
-
 function! ctrlp#dirnfile(entries)
   let [items, cwd] = [[[], []], s:dyncwd.s:lash()]
   for each in a:entries
     let etype = getftype(each)
-    if s:igntype >= 0 && s:usrign(each, etype) | con | en
     if etype == 'dir'
       if s:showhidden | if each !~ '[\/]\.\{1,2}$'
         cal add(items[0], each)
@@ -1216,24 +1154,6 @@ function! ctrlp#dirnfile(entries)
     en
   endfo
   retu items
-endfunction
-
-function! s:usrign(item, type)
-  if s:igntype == 1 | retu a:item =~ s:usrign | end
-  if s:igntype == 2
-    if call(s:usrign, [a:item, a:type])
-      retu 1
-    end
-  elsei s:igntype == 4
-    if has_key(s:usrign, a:type) && s:usrign[a:type] != ''
-          \ && a:item =~ s:usrign[a:type]
-      retu 1
-    elsei has_key(s:usrign, 'func') && s:usrign['func'] != ''
-          \ && call(s:usrign['func'], [a:item, a:type])
-      retu 1
-    end
-  end
-  retu 0
 endfunction
 
 function! s:samerootsyml(each, isfile, cwd)
