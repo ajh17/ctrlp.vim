@@ -196,7 +196,7 @@ cal s:execextvar('exit')
 let v:errmsg = s:ermsg
 ec
 endfunction
-" * Clear caches {{{1
+" * Reset {{{1
 function! s:Reset(args)
   let opts = has_key(a:args, 'opts') ? [a:args['opts']] : []
   cal call('s:opts', opts)
