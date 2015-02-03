@@ -215,7 +215,7 @@ function! ctrlp#files()
     el
       sil! cal ctrlp#progress('Indexing...')
       try | cal s:UserCmd(lscmd)
-      cat | retu [] | endt
+      cat | return [] | endt
     endif
     " Remove base directory
     cal ctrlp#rmbasedir(g:ctrlp_allfiles)
@@ -232,7 +232,7 @@ function! ctrlp#files()
     endif
   endif
   cal extend(s:ficounts, { s:dyncwd : [len(g:ctrlp_allfiles), catime] })
-  retu g:ctrlp_allfiles
+  return g:ctrlp_allfiles
 endfunction
 
 function! s:GlobPath(dirs, depth)
@@ -249,7 +249,7 @@ function! s:UserCmd(lscmd)
   let [path, lscmd] = [s:dyncwd, a:lscmd]
   let do_ign =
         \ type(s:usrcmd) == 4 && has_key(s:usrcmd, 'ignore') && s:usrcmd['ignore']
-  if do_ign && ctrlp#igncwd(s:cwd) | retu | endif
+  if do_ign && ctrlp#igncwd(s:cwd) | return | endif
   if exists('+ssl') && &ssl
     let [ssl, &ssl, path] = [&ssl, 0, tr(path, '/', '\')]
   endif
@@ -275,13 +275,13 @@ endfunction
 function! s:lsCmd()
   let cmd = s:usrcmd
   if type(cmd) == 1
-    retu cmd
+    return cmd
   elsei type(cmd) == 3 && len(cmd) >= 2 && cmd[:1] != ['', '']
     if s:findroot(s:dyncwd, cmd[0], 0, 1) == []
-      retu len(cmd) == 3 ? cmd[2] : ''
+      return len(cmd) == 3 ? cmd[2] : ''
     endif
     let s:vcscmd = s:lash == '\'
-    retu cmd[1]
+    return cmd[1]
   elsei type(cmd) == 4 && ( has_key(cmd, 'types') || has_key(cmd, 'fallback') )
     let fndroot = []
     if has_key(cmd, 'types') && cmd['types'] != {}
@@ -292,13 +292,13 @@ function! s:lsCmd()
       let fndroot = s:findroot(s:dyncwd, markrs, 0, 1)
     endif
     if fndroot == []
-      retu has_key(cmd, 'fallback') ? cmd['fallback'] : ''
+      return has_key(cmd, 'fallback') ? cmd['fallback'] : ''
     endif
     for pair in cmdtypes
       if pair[0] == fndroot[0] | brea | endif
     endfor
     let s:vcscmd = s:lash == '\'
-    retu pair[1]
+    return pair[1]
   endif
 endfunction
 " * MatchedItems() {{{1
@@ -315,7 +315,7 @@ function! s:MatchIt(items, pat, limit, exc)
     if a:limit > 0 && len(lines) >= a:limit | brea | endif
   endfor
   let s:mdata = [s:dyncwd, s:itemtype, s:regexp, s:sublist(a:items, id, -1)]
-  retu lines
+  return lines
 endfunction
 
 function! s:MatchedItems(items, pat, limit)
@@ -338,7 +338,7 @@ function! s:MatchedItems(items, pat, limit)
   endif
   let s:matches = len(lines)
   unl! s:did_exp
-  retu lines
+  return lines
 endfunction
 
 function! s:SplitPattern(str)
@@ -368,7 +368,7 @@ function! s:SplitPattern(str)
       endif
     endif
   endif
-  retu escape(pat, '~')
+  return escape(pat, '~')
 endfunction
 " * BuildPrompt() {{{1
 function! s:Render(lines, pat)
@@ -385,7 +385,7 @@ function! s:Render(lines, pat)
     cal setline(1, s:offset(lines, height - 1))
     setl noma nocul
     exe cur_cmd
-    retu
+    return
   endif
   let s:matched = copy(lines)
   " Sorting
@@ -411,7 +411,7 @@ function! s:Update(str)
   " Get the new string sans tail
   let str = s:sanstail(a:str)
   " Stop if the string's unchanged
-  if str == oldstr && !empty(str) && !exists('s:force') | retu | endif
+  if str == oldstr && !empty(str) && !exists('s:force') | return | endif
   let s:martcs = &scs && str =~ '\u' ? '\C' : ''
   let pat = s:matcher == {} ? s:SplitPattern(str) : str
   let lines = s:nolim == 1 && empty(str) ? copy(g:ctrlp_lines)
@@ -452,7 +452,7 @@ endfunction
 " ** Prt Actions {{{1
 " Editing {{{2
 function! s:PrtClear()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   unl! s:hstgot
   let [s:prompt, s:matches] = [['', '', ''], 1]
   cal s:BuildPrompt(1)
@@ -467,14 +467,14 @@ function! s:PrtAdd(char)
 endfunction
 
 function! s:PrtBS()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   unl! s:hstgot
   let [s:prompt[0], s:matches] = [substitute(s:prompt[0], '.$', '', ''), 1]
   cal s:BuildPrompt(1)
 endfunction
 
 function! s:PrtDelete()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   unl! s:hstgot
   let [prt, s:matches] = [s:prompt, 1]
   let prt[1] = matchstr(prt[2], '^.')
@@ -483,7 +483,7 @@ function! s:PrtDelete()
 endfunction
 
 function! s:PrtDeleteWord()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   unl! s:hstgot
   let [str, s:matches] = [s:prompt[0], 1]
   let str = str =~ '\W\w\+$' ? matchstr(str, '^.\+\W\ze\w\+$')
@@ -495,7 +495,7 @@ function! s:PrtDeleteWord()
 endfunction
 
 function! s:PrtExpandDir()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   let str = s:getinput('c')
   if str =~ '\v^\@(cd|lc[hd]?|chd)\s.+' && s:spi
     let hasat = split(str, '\v^\@(cd|lc[hd]?|chd)\s*\zs')
@@ -513,7 +513,7 @@ function! s:PrtExpandDir()
       let str = fnamemodify(s:fnesc(spc, 'g'), mdr).nmd
     endif
   endif
-  if str == '' | retu | endif
+  if str == '' | return | endif
   unl! s:hstgot
   let s:act_add = 1
   let [base, seed] = s:headntail(str)
@@ -532,7 +532,7 @@ function! s:PrtExpandDir()
 endfunction
 " Movement {{{2
 function! s:PrtCurLeft()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   let prt = s:prompt
   if !empty(prt[0])
     let s:prompt = [substitute(prt[0], '.$', '', ''), matchstr(prt[0], '.$'),
@@ -542,7 +542,7 @@ function! s:PrtCurLeft()
 endfunction
 
 function! s:PrtCurRight()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   let prt = s:prompt
   let s:prompt = [prt[0] . prt[1], matchstr(prt[2], '^.'),
         \ substitute(prt[2], '^.', '', '')]
@@ -550,14 +550,14 @@ function! s:PrtCurRight()
 endfunction
 
 function! s:PrtCurStart()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   let str = join(s:prompt, '')
   let s:prompt = ['', matchstr(str, '^.'), substitute(str, '^.', '', '')]
   cal s:BuildPrompt(0)
 endfunction
 
 function! s:PrtCurEnd()
-  if !s:focus | retu | endif
+  if !s:focus | return | endif
   let s:prompt = [join(s:prompt, ''), '', '']
   cal s:BuildPrompt(0)
 endfunction
@@ -613,7 +613,7 @@ function! s:PrtExit()
 endfunction
 
 function! s:PrtHistory(...)
-  if !s:focus || !s:maxhst | retu | endif
+  if !s:focus || !s:maxhst | return | endif
   let [str, hst, s:matches] = [join(s:prompt, ''), s:hstry, 1]
   " Save to history if not saved before
   let [hst[0], hslen] = [exists('s:hstgot') ? hst[0] : str, len(hst)]
@@ -628,7 +628,7 @@ endfunction
 "}}}1
 " * Mappings {{{1
 function! s:MapNorms()
-  if exists('s:nmapped') && s:nmapped == s:bufnr | retu | endif
+  if exists('s:nmapped') && s:nmapped == s:bufnr | return | endif
   let pcmd = "nn \<buffer> \<silent> \<k%s> :\<c-u>cal \<SID>%s(\"%s\")\<cr>"
   let cmd = substitute(pcmd, 'k%s', 'char-%d', '')
   let pfunc = 'PrtFocusMap'
@@ -683,10 +683,10 @@ endfunction
 function! s:SetWD(args)
   if has_key(a:args, 'args') && stridx(a:args['args'], '--dir') >= 0
         \ && exists('s:dyncwd')
-    cal ctrlp#setdir(s:dyncwd) | retu
+    cal ctrlp#setdir(s:dyncwd) | return
   endif
   if has_key(a:args, 'dir') && a:args['dir'] != ''
-    cal ctrlp#setdir(a:args['dir']) | retu
+    cal ctrlp#setdir(a:args['dir']) | return
   endif
   let pmodes = has_key(a:args, 'mode') ? a:args['mode'] : s:pathmode
   let [s:crfilerel, s:dyncwd] = [fnamemodify(s:crfile, ':.'), getcwd()]
@@ -699,7 +699,7 @@ function! s:SetWD(args)
   endif
   let spath = pmodes =~ 'd' ? s:dyncwd : pmodes =~ 'w' ? s:cwd : s:crfpath
   for pmode in split(pmodes, '\zs')
-    if ctrlp#setpathmode(pmode, spath) | retu | endif
+    if ctrlp#setpathmode(pmode, spath) | return | endif
   endfor
 endfunction
 " * AcceptSelection() {{{1
@@ -767,35 +767,35 @@ function! s:SpecInputs(str)
           \ '../'.repeat('../', strlen(a:str) - 2) : a:str)
     if cwd != s:dyncwd | cal ctrlp#setlines() | endif
     cal s:PrtClear()
-    retu 1
+    return 1
   elsei a:str == s:lash && s:spi
     cal s:SetWD({ 'mode': 'rd' })
     cal ctrlp#setlines()
     cal s:PrtClear()
-    retu 1
+    return 1
   elsei a:str =~ '^@.\+' && s:spi
-    retu s:at(a:str)
+    return s:at(a:str)
   elsei a:str == '?'
     cal s:PrtExit()
     let hlpwin = &columns > 159 ? '| vert res 80' : ''
     sil! exe 'bo vert h ctrlp-mappings' hlpwin '| norm! 0'
-    retu 1
+    return 1
   endif
-  retu 0
+  return 0
 endfunction
 
 function! s:AcceptSelection(action)
   let [md, icr] = [a:action[0], match(a:action, 'r') >= 0]
   let subm = icr || ( !icr && md == 'e' )
   let str = s:getinput()
-  if subm | if s:SpecInputs(str) | retu | en | endif
+  if subm | if s:SpecInputs(str) | return | en | endif
   " Get the selected line
   let line = ctrlp#getcline()
   if !subm && !s:itemtype && line == '' && line('.') > s:offset
         \ && str !~ '\v^(\.\.([\/]\.\.)*[\/]?[.\/]*|/|\\|\?|\@.+)$'
-    cal s:CreateNewFile(md) | retu
+    cal s:CreateNewFile(md) | return
   endif
-  if empty(line) | retu | endif
+  if empty(line) | return | endif
   " Do something with it
   if s:itemtype < 3
     let [actfunc, type] = ['ctrlp#acceptfile', 'dict']
@@ -810,19 +810,19 @@ endfunction
 " - CreateNewFile() {{{1
 function! s:CreateNewFile(...)
   let [md, str] = ['', s:getinput('n')]
-  if empty(str) | retu | endif
+  if empty(str) | return | endif
   if !a:0
     " Get the extra argument
     let md = s:argmaps(md, 1)
-    if md == 'cancel' | retu | endif
+    if md == 'cancel' | return | endif
   endif
   let str = s:sanstail(str)
   let [base, fname] = s:headntail(str)
-  if fname =~ '^[\/]$' | retu | endif
+  if fname =~ '^[\/]$' | return | endif
   if base != '' | if isdirectory(ctrlp#utils#mkdir(base))
     let optyp = str | en | el | let optyp = fname
   endif
-  if !exists('optyp') | retu | endif
+  if !exists('optyp') | return | endif
   let [filpath, tail] = [fnamemodify(optyp, ':p'), s:tail()]
   cal s:PrtExit()
   let cmd = md == 'r' ? ctrlp#normcmd('e') :
@@ -838,32 +838,32 @@ endfunction
 function! ctrlp#complen(...)
   " By length
   let [len1, len2] = [strlen(a:1), strlen(a:2)]
-  retu len1 == len2 ? 0 : len1 > len2 ? 1 : -1
+  return len1 == len2 ? 0 : len1 > len2 ? 1 : -1
 endfunction
 
 function! s:compmatlen(...)
   " By match length
   let mln1 = s:shortest(s:matchlens(a:1, s:compat))
   let mln2 = s:shortest(s:matchlens(a:2, s:compat))
-  retu mln1 == mln2 ? 0 : mln1 > mln2 ? 1 : -1
+  return mln1 == mln2 ? 0 : mln1 > mln2 ? 1 : -1
 endfunction
 
 function! s:comptime(...)
   " By last modified time
   let [time1, time2] = [getftime(a:1), getftime(a:2)]
-  retu time1 == time2 ? 0 : time1 < time2 ? 1 : -1
+  return time1 == time2 ? 0 : time1 < time2 ? 1 : -1
 endfunction
 
 function! s:compmreb(...)
   " By last entered time (bufnr)
   let [id1, id2] = [index(s:mrbs, a:1), index(s:mrbs, a:2)]
-  retu id1 == id2 ? 0 : id1 > id2 ? 1 : -1
+  return id1 == id2 ? 0 : id1 > id2 ? 1 : -1
 endfunction
 
 function! s:compmref(...)
   " By last entered time (MRU)
   let [id1, id2] = [index(g:ctrlp_lines, a:1), index(g:ctrlp_lines, a:2)]
-  retu id1 == id2 ? 0 : id1 > id2 ? 1 : -1
+  return id1 == id2 ? 0 : id1 > id2 ? 1 : -1
 endfunction
 
 function! s:comparent(...)
@@ -871,44 +871,44 @@ function! s:comparent(...)
   if !stridx(s:crfpath, s:dyncwd)
     let [as1, as2] = [s:dyncwd.s:lash().a:1, s:dyncwd.s:lash().a:2]
     let [loc1, loc2] = [s:getparent(as1), s:getparent(as2)]
-    if loc1 == s:crfpath && loc2 != s:crfpath | retu -1 | endif
-    if loc2 == s:crfpath && loc1 != s:crfpath | retu 1  | endif
-    retu 0
+    if loc1 == s:crfpath && loc2 != s:crfpath | return -1 | endif
+    if loc2 == s:crfpath && loc1 != s:crfpath | return 1  | endif
+    return 0
   endif
-  retu 0
+  return 0
 endfunction
 
 function! s:compfnlen(...)
   " By filename length
   let len1 = strlen(split(a:1, s:lash)[-1])
   let len2 = strlen(split(a:2, s:lash)[-1])
-  retu len1 == len2 ? 0 : len1 > len2 ? 1 : -1
+  return len1 == len2 ? 0 : len1 > len2 ? 1 : -1
 endfunction
 
 function! s:matchlens(str, pat, ...)
-  if empty(a:pat) || index(['^', '$'], a:pat) >= 0 | retu {} | endif
+  if empty(a:pat) || index(['^', '$'], a:pat) >= 0 | return {} | endif
   let st   = a:0 ? a:1 : 0
   let lens = a:0 >= 2 ? a:2 : {}
   let nr   = a:0 >= 3 ? a:3 : 0
-  if nr > 20 | retu {} | endif
+  if nr > 20 | return {} | endif
   if match(a:str, a:pat, st) >= 0
     let [mst, mnd] = [matchstr(a:str, a:pat, st), matchend(a:str, a:pat, st)]
     let lens = extend(lens, { nr : [strlen(mst), mst] })
     let lens = s:matchlens(a:str, a:pat, mnd, lens, nr + 1)
   endif
-  retu lens
+  return lens
 endfunction
 
 function! s:shortest(lens)
-  retu min(map(values(a:lens), 'v:val[0]'))
+  return min(map(values(a:lens), 'v:val[0]'))
 endfunction
 
 function! s:mixedsort(...)
   if s:itemtype == 1
     let pat = '[\/]\?\[\d\+\*No Name\]$'
-    if a:1 =~# pat && a:2 =~# pat | retu 0
-    elsei a:1 =~# pat | retu 1
-    elsei a:2 =~# pat | retu -1 | endif
+    if a:1 =~# pat && a:2 =~# pat | return 0
+    elsei a:1 =~# pat | return 1
+    elsei a:2 =~# pat | return -1 | endif
   endif
   let [cln, cml] = [ctrlp#complen(a:1, a:2), s:compmatlen(a:1, a:2)]
   if s:ispath
@@ -924,9 +924,9 @@ function! s:mixedsort(...)
     endif
     let ms += [cml, 0, 0, 0]
     let mp = call('s:multipliers', ms[:3])
-    retu cln + ms[0] * mp[0] + ms[1] * mp[1] + ms[2] * mp[2] + ms[3] * mp[3]
+    return cln + ms[0] * mp[0] + ms[1] * mp[1] + ms[2] * mp[2] + ms[3] * mp[3]
   endif
-  retu cln + cml * 2
+  return cln + cml * 2
 endfunction
 
 function! s:multipliers(...)
@@ -934,11 +934,11 @@ function! s:multipliers(...)
   let mp1 = !a:2 ? 0 : 1 + ( !mp0 ? 1 : mp0 )
   let mp2 = !a:3 ? 0 : 1 + ( !( mp0 + mp1 ) ? 1 : ( mp0 + mp1 ) )
   let mp3 = !a:4 ? 0 : 1 + ( !( mp0 + mp1 + mp2 ) ? 1 : ( mp0 + mp1 + mp2 ) )
-  retu [mp0, mp1, mp2, mp3]
+  return [mp0, mp1, mp2, mp3]
 endfunction
 
 function! s:compval(...)
-  retu a:1 - a:2
+  return a:1 - a:2
 endfunction
 " *** Paths {{{2
 " Line formatting {{{3
@@ -956,21 +956,21 @@ function! s:formatline(str)
     let str .= idc != '' ? ' '.idc : ''
   endif
   let cond = s:ispath && ( s:winw - 4 ) < s:strwidth(str)
-  retu '> '.( cond ? s:pathshorten(str) : str )
+  return '> '.( cond ? s:pathshorten(str) : str )
 endfunction
 
 function! s:pathshorten(str)
-  retu matchstr(a:str, '^.\{9}').'...'
+  return matchstr(a:str, '^.\{9}').'...'
         \ .matchstr(a:str, '.\{'.( s:winw - 16 ).'}$')
 endfunction
 
 function! s:offset(lines, height)
   let s:offset = s:mw_order == 'btt' ? ( a:height - s:res_count ) : 0
-  retu s:offset > 0 ? ( repeat([''], s:offset) + a:lines ) : a:lines
+  return s:offset > 0 ? ( repeat([''], s:offset) + a:lines ) : a:lines
 endfunction
 " Directory completion {{{3
 function! s:dircompl(be, sd)
-  if a:sd == '' | retu [] | endif
+  if a:sd == '' | return [] | endif
   if a:be == ''
     let [be, sd] = [s:dyncwd, a:sd]
   el
@@ -983,7 +983,7 @@ function! s:dircompl(be, sd)
   endif
   cal filter(dirs, '!match(v:val, escape(sd, ''~$.\''))'
         \ . ' && v:val !~ ''\v(^|[\/])\.{1,2}[\/]$''')
-  retu dirs
+  return dirs
 endfunction
 
 function! s:findcommon(items, seed)
@@ -997,20 +997,20 @@ function! s:findcommon(items, seed)
     let cmn .= char
     let ic += 1
   endfor
-  retu cmn
+  return cmn
 endfunction
 " Misc {{{3
 function! s:headntail(str)
   let parts = split(a:str, '[\/]\ze[^\/]\+[\/:]\?$')
-  retu len(parts) == 1 ? ['', parts[0]] : len(parts) == 2 ? parts : []
+  return len(parts) == 1 ? ['', parts[0]] : len(parts) == 2 ? parts : []
 endfunction
 
 function! s:lash(...)
-  retu ( a:0 ? a:1 : s:dyncwd ) !~ '[\/]$' ? s:lash : ''
+  return ( a:0 ? a:1 : s:dyncwd ) !~ '[\/]$' ? s:lash : ''
 endfunction
 
 function! s:ispathitem()
-  retu s:itemtype < 3 || ( s:itemtype > 2 && s:getextvar('type') == 'path' )
+  return s:itemtype < 3 || ( s:itemtype > 2 && s:getextvar('type') == 'path' )
 endfunction
 
 function! ctrlp#dirnfile(entries)
@@ -1034,22 +1034,22 @@ function! ctrlp#dirnfile(entries)
       cal add(items[1], each)
     endif
   endfor
-  retu items
+  return items
 endfunction
 
 function! s:samerootsyml(each, isfile, cwd)
   let resolve = fnamemodify(resolve(a:each), ':p:h')
   let resolve .= s:lash(resolve)
-  retu !( stridx(resolve, a:cwd) && ( stridx(a:cwd, resolve) || a:isfile ) )
+  return !( stridx(resolve, a:cwd) && ( stridx(a:cwd, resolve) || a:isfile ) )
 endfunction
 
 function! ctrlp#rmbasedir(items)
   let cwd = s:dyncwd.s:lash()
   if a:items != [] && !stridx(a:items[0], cwd)
     let idx = strlen(cwd)
-    retu map(a:items, 'strpart(v:val, idx)')
+    return map(a:items, 'strpart(v:val, idx)')
   endif
-  retu a:items
+  return a:items
 endfunction
 " Working directory {{{3
 function! s:getparent(item)
@@ -1057,7 +1057,7 @@ function! s:getparent(item)
   if parent == '' || parent !~ '[\/]'
     let parent .= s:lash
   endif
-  retu parent
+  return parent
 endfunction
 
 function! s:findroot(curr, mark, depth, type)
@@ -1074,33 +1074,33 @@ function! s:findroot(curr, mark, depth, type)
   endif
   if fnd
     if !a:type | cal ctrlp#setdir(a:curr) | endif
-    retu [exists('markr') ? markr : a:mark, a:curr]
+    return [exists('markr') ? markr : a:mark, a:curr]
   elsei depth > s:maxdepth
     cal ctrlp#setdir(s:cwd)
   el
     let parent = s:getparent(a:curr)
     if parent != a:curr
-      retu s:findroot(parent, a:mark, depth, a:type)
+      return s:findroot(parent, a:mark, depth, a:type)
     endif
   endif
-  retu []
+  return []
 endfunction
 
 function! ctrlp#setpathmode(pmode, ...)
   if a:pmode == 'c' || ( a:pmode == 'a' && stridx(s:crfpath, s:cwd) < 0 )
     if exists('+acd') | let [s:glb_acd, &acd] = [&acd, 0] | endif
     cal ctrlp#setdir(s:crfpath)
-    retu 1
+    return 1
   elsei a:pmode == 'r'
     let spath = a:0 ? a:1 : s:crfpath
     let markers = ['.git', '.hg', '.svn', '.bzr', '_darcs']
     if type(s:rmarkers) == 3 && !empty(s:rmarkers)
-      if s:findroot(spath, s:rmarkers, 0, 0) != [] | retu 1 | endif
+      if s:findroot(spath, s:rmarkers, 0, 0) != [] | return 1 | endif
       cal filter(markers, 'index(s:rmarkers, v:val) < 0')
     endif
-    if s:findroot(spath, markers, 0, 0) != [] | retu 1 | endif
+    if s:findroot(spath, markers, 0, 0) != [] | return 1 | endif
   endif
-  retu 0
+  return 0
 endfunction
 
 function! ctrlp#setdir(path, ...)
@@ -1110,11 +1110,11 @@ function! ctrlp#setdir(path, ...)
 endfunction
 " Fallbacks {{{3
 function! s:glbpath(...)
-  retu call('ctrlp#utils#globpath', a:000)
+  return call('ctrlp#utils#globpath', a:000)
 endfunction
 
 function! s:fnesc(...)
-  retu call('ctrlp#utils#fnesc', a:000)
+  return call('ctrlp#utils#fnesc', a:000)
 endfunction
 
 function! ctrlp#setlcdir()
@@ -1126,18 +1126,18 @@ endfunction
 function! s:gethistloc()
   let utilcadir = ctrlp#utils#cachedir()
   let cache_dir = utilcadir.s:lash(utilcadir).'hist'
-  retu [cache_dir, cache_dir.s:lash(cache_dir).'cache.txt']
+  return [cache_dir, cache_dir.s:lash(cache_dir).'cache.txt']
 endfunction
 
 function! s:gethistdata()
-  retu ctrlp#utils#readfile(s:gethistloc()[1])
+  return ctrlp#utils#readfile(s:gethistloc()[1])
 endfunction
 
 function! ctrlp#recordhist()
   let str = join(s:prompt, '')
-  if empty(str) || !s:maxhst | retu | endif
+  if empty(str) || !s:maxhst | return | endif
   let hst = s:hstry
-  if len(hst) > 1 && hst[1] == str | retu | endif
+  if len(hst) > 1 && hst[1] == str | return | endif
   cal extend(hst, [str], 1)
   if len(hst) > s:maxhst | cal remove(hst, s:maxhst, -1) | endif
   cal ctrlp#utils#writecache(hst, s:gethistloc()[0], s:gethistloc()[1])
@@ -1152,22 +1152,22 @@ function! s:ifilter(list, str)
       endif
     cat | con | endt
   endfor
-  retu rlist
+  return rlist
 endfunction
 
 function! s:dictindex(dict, expr)
   for key in keys(a:dict)
-    if a:dict[key] == a:expr | retu key | endif
+    if a:dict[key] == a:expr | return key | endif
   endfor
-  retu -1
+  return -1
 endfunction
 
 function! s:vacantdict(dict)
-  retu filter(range(1, max(keys(a:dict))), '!has_key(a:dict, v:val)')
+  return filter(range(1, max(keys(a:dict))), '!has_key(a:dict, v:val)')
 endfunction
 
 function! s:sublist(l, s, e)
-  retu v:version > 701 ? a:l[(a:s):(a:e)] : s:sublist7071(a:l, a:s, a:e)
+  return v:version > 701 ? a:l[(a:s):(a:e)] : s:sublist7071(a:l, a:s, a:e)
 endfunction
 
 function! s:sublist7071(l, s, e)
@@ -1176,7 +1176,7 @@ function! s:sublist7071(l, s, e)
     cal add(newlist, get(a:l, id))
     let id += 1
   endw
-  retu newlist
+  return newlist
 endfunction
 " Buffers {{{2
 function! s:buftab(bufnr, md)
@@ -1185,11 +1185,11 @@ function! s:buftab(bufnr, md)
     let buflist = tabpagebuflist(tabnr)
     if index(buflist, a:bufnr) >= 0
       for winnr in range(1, tabpagewinnr(tabnr, '$'))
-        if buflist[winnr - 1] == a:bufnr | retu [tabnr, winnr] | endif
+        if buflist[winnr - 1] == a:bufnr | return [tabnr, winnr] | endif
       endfor
     endif
   endfor
-  retu [0, 0]
+  return [0, 0]
 endfunction
 
 function! s:bufwins(bufnr)
@@ -1197,16 +1197,16 @@ function! s:bufwins(bufnr)
   for tabnr in range(1, tabpagenr('$'))
     let winns += count(tabpagebuflist(tabnr), a:bufnr)
   endfor
-  retu winns
+  return winns
 endfunction
 
 function! s:nonamecond(str, filpath)
-  retu a:str =~ '[\/]\?\[\d\+\*No Name\]$' && !filereadable(a:filpath)
+  return a:str =~ '[\/]\?\[\d\+\*No Name\]$' && !filereadable(a:filpath)
         \ && bufnr('^'.a:filpath.'$') < 1
 endfunction
 
 function! ctrlp#normcmd(cmd, ...)
-  if a:0 < 2 && s:nosplit() | retu a:cmd | endif
+  if a:0 < 2 && s:nosplit() | return a:cmd | endif
   let norwins = filter(range(1, winnr('$')),
         \ 'empty(getbufvar(winbufnr(v:val), "&bt"))')
   for each in norwins
@@ -1220,18 +1220,18 @@ function! ctrlp#normcmd(cmd, ...)
     if index(norwins, winnr()) < 0
       exe ( exists('fstemp') ? fstemp : norwin ).'winc w'
     endif
-    retu a:cmd
+    return a:cmd
   endif
-  retu a:0 ? a:1 : 'bo vne'
+  return a:0 ? a:1 : 'bo vne'
 endfunction
 
 function! ctrlp#modfilecond(w)
-  retu &mod && !&hid && &bh != 'hide' && s:bufwins(bufnr('%')) == 1 && !&cf &&
+  return &mod && !&hid && &bh != 'hide' && s:bufwins(bufnr('%')) == 1 && !&cf &&
         \ ( ( !&awa && a:w ) || filewritable(fnamemodify(bufname('%'), ':p')) != 1 )
 endfunction
 
 function! s:nosplit()
-  retu !empty(s:nosplit) && match([bufname('%'), &l:ft, &l:bt], s:nosplit) >= 0
+  return !empty(s:nosplit) && match([bufname('%'), &l:ft, &l:bt], s:nosplit) >= 0
 endfunction
 
 function! s:setupblank()
@@ -1257,13 +1257,13 @@ function! s:iscmdwin()
   sil! noa winc p
   sil! noa winc p
   let [v:errmsg, ermsg] = [ermsg, v:errmsg]
-  retu ermsg =~ '^E11:'
+  return ermsg =~ '^E11:'
 endfunction
 " Arguments {{{2
 function! s:at(str)
   if a:str =~ '\v^\@(cd|lc[hd]?|chd).*'
     let str = substitute(a:str, '\v^\@(cd|lc[hd]?|chd)\s*', '', '')
-    if str == '' | retu 1 | endif
+    if str == '' | return 1 | endif
     let str = str =~ '^%:.\+' ? fnamemodify(s:crfile, str[1:]) : str
     let path = fnamemodify(expand(str, 1), ':p')
     if isdirectory(path)
@@ -1274,17 +1274,17 @@ function! s:at(str)
       cal ctrlp#recordhist()
       cal s:PrtClear()
     endif
-    retu 1
+    return 1
   endif
-  retu 0
+  return 0
 endfunction
 
 function! s:tail()
   if exists('s:optail') && !empty('s:optail')
     let tailpref = s:optail !~ '^\s*+' ? ' +' : ' '
-    retu tailpref.s:optail
+    return tailpref.s:optail
   endif
-  retu ''
+  return ''
 endfunction
 
 function! s:sanstail(str)
@@ -1296,7 +1296,7 @@ function! s:sanstail(str)
     let s:optail = matchstr(str, '\\\@<!:\zs'.pat)
     let str = substitute(str, '\\\@<!:'.pat, '', '')
   endif
-  retu substitute(str, '\\\ze:', '', 'g')
+  return substitute(str, '\\\ze:', '', 'g')
 endfunction
 
 function! s:argmaps(md, i)
@@ -1312,45 +1312,45 @@ function! s:argmaps(md, i)
     endif
   endif
   let str = roh[a:i][0].': [t]ab/[v]ertical/[h]orizontal'.roh[a:i][1].'? '
-  retu s:choices(str, ['t', 'v', 'h'] + roh[a:i][2], 's:argmaps', [a:md, a:i])
+  return s:choices(str, ['t', 'v', 'h'] + roh[a:i][2], 's:argmaps', [a:md, a:i])
 endfunction
 
 function! s:insertstr()
   let str = 'Insert: c[w]ord/c[f]ile/[s]earch/[v]isual/[c]lipboard/[r]egister? '
-  retu s:choices(str, ['w', 'f', 's', 'v', 'c', 'r'], 's:insertstr', [])
+  return s:choices(str, ['w', 'f', 's', 'v', 'c', 'r'], 's:insertstr', [])
 endfunction
 
 function! s:textdialog(str)
   redr | echoh MoreMsg | echon a:str | echoh None
-  retu nr2char(getchar())
+  return nr2char(getchar())
 endfunction
 
 function! s:choices(str, choices, func, args)
   let char = s:textdialog(a:str)
   if index(a:choices, char) >= 0
-    retu char
+    return char
   elsei char =~# "\\v\<Esc>|\<C-c>|\<C-g>|\<C-u>|\<C-w>|\<C-[>"
     cal s:BuildPrompt(0)
-    retu 'cancel'
+    return 'cancel'
   elsei char =~# "\<CR>" && a:args != []
-    retu a:args[0]
+    return a:args[0]
   endif
-  retu call(a:func, a:args)
+  return call(a:func, a:args)
 endfunction
 
 function! s:getregs()
   let char = s:textdialog('Insert from register: ')
   if char =~# "\\v\<Esc>|\<C-c>|\<C-g>|\<C-u>|\<C-w>|\<C-[>"
     cal s:BuildPrompt(0)
-    retu -1
+    return -1
   elsei char =~# "\<CR>"
-    retu s:getregs()
+    return s:getregs()
   endif
-  retu s:regisfilter(char)
+  return s:regisfilter(char)
 endfunction
 
 function! s:regisfilter(reg)
-  retu substitute(getreg(a:reg), "[\t\n]", ' ', 'g')
+  return substitute(getreg(a:reg), "[\t\n]", ' ', 'g')
 endfunction
 " Misc {{{2
 function! s:modevar()
@@ -1363,27 +1363,27 @@ function! s:modevar()
 endfunction
 
 function! s:nosort()
-  retu s:matcher != {} || s:nolim == 1 || ( s:itemtype == 2 )
+  return s:matcher != {} || s:nolim == 1 || ( s:itemtype == 2 )
         \ || ( s:itemtype =~ '\v^(1|2)$' && s:prompt == ['', '', ''] ) || !s:dosort
 endfunction
 
 function! s:byfname()
-  retu s:ispath && s:byfname
+  return s:ispath && s:byfname
 endfunction
 
 function! s:narrowable()
-  retu exists('s:act_add') && exists('s:matched') && s:matched != []
+  return exists('s:act_add') && exists('s:matched') && s:matched != []
         \ && exists('s:mdata') && s:mdata[:2] == [s:dyncwd, s:itemtype, s:regexp]
         \ && s:matcher == {} && !exists('s:did_exp')
 endfunction
 
 function! s:getinput(...)
   let [prt, spi] = [s:prompt, ( a:0 ? a:1 : '' )]
-  retu spi == 'c' ? prt[0] : join(prt, '')
+  return spi == 'c' ? prt[0] : join(prt, '')
 endfunction
 
 function! s:strwidth(str)
-  retu exists('*strdisplaywidth') ? strdisplaywidth(a:str) : strlen(a:str)
+  return exists('*strdisplaywidth') ? strdisplaywidth(a:str) : strlen(a:str)
 endfunction
 
 function! ctrlp#j2l(nr)
@@ -1392,7 +1392,7 @@ function! ctrlp#j2l(nr)
 endfunction
 
 function! s:maxf(len)
-  retu s:maxfiles && a:len > s:maxfiles
+  return s:maxfiles && a:len > s:maxfiles
 endfunction
 
 function! s:regexfilter(str)
@@ -1400,21 +1400,21 @@ function! s:regexfilter(str)
   for key in keys(s:fpats) | if str =~ key
     let str = substitute(str, s:fpats[key], '', 'g')
   en | endfor
-retu str
+return str
 endfunction
 
 function! s:walker(m, p, d)
-  retu a:d >= 0 ? a:p < a:m ? a:p + a:d : 0 : a:p > 0 ? a:p + a:d : a:m
+  return a:d >= 0 ? a:p < a:m ? a:p + a:d : 0 : a:p > 0 ? a:p + a:d : a:m
 endfunction
 
 function! s:delent(rfunc)
-  if a:rfunc == '' | retu | endif
+  if a:rfunc == '' | return | endif
   let [s:force, tbrem] = [1, []]
   if tbrem == [] && ( has('dialog_gui') || has('dialog_con') ) &&
         \ confirm("Wipe all entries?", "&OK\n&Cancel") != 1
     unl s:force
     cal s:BuildPrompt(0)
-    retu
+    return
   endif
   let g:ctrlp_lines = call(a:rfunc, [tbrem])
   cal s:BuildPrompt(1)
@@ -1441,7 +1441,7 @@ function! s:lastvisual()
   cal setreg('v', ovreg, ovtype)
   cal setreg('"', oureg, outype)
   cal winrestview(cview)
-  retu selected
+  return selected
 endfunction
 
 function! s:openfile(cmd, fid, tail, chkmod, ...)
@@ -1480,27 +1480,27 @@ function! ctrlp#tabcount()
           \ s:tabpage =~ 'b' ? tabpos - 1 :
           \ tabpos
   endif
-  retu tabct < 0 ? 0 : tabct
+  return tabct < 0 ? 0 : tabct
 endfunction
 
 function! s:settype(type)
-  retu a:type < 0 ? exists('s:itemtype') ? s:itemtype : 0 : a:type
+  return a:type < 0 ? exists('s:itemtype') ? s:itemtype : 0 : a:type
 endfunction
 " Matching {{{2
 function! s:matchfname(item, pat)
   let parts = split(a:item, '[\/]\ze[^\/]\+$')
   let mfn = match(parts[-1], a:pat[0])
-  retu len(a:pat) == 1 ? mfn : len(a:pat) == 2 ?
+  return len(a:pat) == 1 ? mfn : len(a:pat) == 2 ?
         \ ( mfn >= 0 && ( len(parts) == 2 ? match(parts[0], a:pat[1]) : -1 ) >= 0
         \ ? 0 : -1 ) : -1
 endfunction
 
 function! s:matchtabs(item, pat)
-  retu match(split(a:item, '\t\+')[0], a:pat)
+  return match(split(a:item, '\t\+')[0], a:pat)
 endfunction
 
 function! s:matchtabe(item, pat)
-  retu match(split(a:item, '\t\+[^\t]\+$')[0], a:pat)
+  return match(split(a:item, '\t\+[^\t]\+$')[0], a:pat)
 endfunction
 
 function! s:buildpat(lst)
@@ -1508,7 +1508,7 @@ function! s:buildpat(lst)
   for item in range(1, len(a:lst) - 1)
     let pat .= '[^'.a:lst[item - 1].']\{-}'.a:lst[item]
   endfor
-  retu pat
+  return pat
 endfunction
 
 function! s:mfunc()
@@ -1521,7 +1521,7 @@ function! s:mfunc()
       let mfunc = matchtypes[s:matchtype]
     endif
   endif
-  retu mfunc
+  return mfunc
 endfunction
 
 function! s:mmode()
@@ -1531,7 +1531,7 @@ function! s:mmode()
         \ 's:matchtabs': 'first-non-tab',
         \ 's:matchtabe': 'until-last-tab',
         \ }
-  retu matchmodes[s:mfunc]
+  return matchmodes[s:mfunc]
 endfunction
 " Extensions {{{2
 function! s:execextvar(key)
@@ -1544,14 +1544,14 @@ endfunction
 function! s:getextvar(key)
   if s:itemtype > 2
     let vars = g:ctrlp_ext_vars[s:itemtype - 3]
-    retu has_key(vars, a:key) ? vars[a:key] : -1
+    return has_key(vars, a:key) ? vars[a:key] : -1
   endif
-  retu get(g:, 'ctrlp_' . s:matchtype . '_' . a:key, -1)
+  return get(g:, 'ctrlp_' . s:matchtype . '_' . a:key, -1)
 endfunction
 
 function! ctrlp#getcline()
   let [linenr, offset] = [line('.'), ( s:offset > 0 ? s:offset : 0 )]
-  retu !empty(s:lines) && !( offset && linenr <= offset )
+  return !empty(s:lines) && !( offset && linenr <= offset )
         \ ? s:lines[linenr - 1 - offset] : ''
 endfunction
 
