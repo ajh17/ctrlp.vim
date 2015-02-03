@@ -11,7 +11,6 @@
 let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ ['g:ctrlp_', 'b:ctrlp_', {
       \ 'by_filename':           ['s:byfname', 0],
-      \ 'dotfiles':              ['s:showhidden', 0],
       \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
       \ 'match_window':          ['s:mw', ''],
       \ 'match_window_bottom':   ['s:mwbottom', 1],
@@ -30,7 +29,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'working_path_mode':     ['s:pathmode', 'ra'],
       \ }, {
       \ 'regexp':                's:regexp',
-      \ 'show_hidden':           's:showhidden',
       \ 'switch_buffer':         's:jmptobuf',
       \ }, {
       \ 'root_markers':          's:rmarkers',
@@ -120,7 +118,7 @@ function! s:opts(...)
     let s:{each} = {each}
   en | endfor
 let s:maxdepth = min([s:maxdepth, 100])
-let s:glob = s:showhidden ? '.*\|*' : '*'
+let s:glob = '*'
 let s:lash = ctrlp#utils#lash()
 endfunction
 
@@ -980,11 +978,7 @@ function! ctrlp#dirnfile(entries)
   for each in a:entries
     let etype = getftype(each)
     if etype == 'dir'
-      if s:showhidden | if each !~ '[\/]\.\{1,2}$'
-        cal add(items[0], each)
-      en | el
-        cal add(items[0], each)
-      endif
+      cal add(items[0], each)
     elsei etype == 'file'
       cal add(items[1], each)
     endif
