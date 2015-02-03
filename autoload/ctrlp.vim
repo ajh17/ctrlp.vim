@@ -68,7 +68,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'max_files':             ['s:maxfiles', 10000],
   \ 'max_height':            ['s:mxheight', 10],
   \ 'max_history':           ['s:maxhst', exists('+hi') ? &hi : 20],
-  \ 'open_multi':            ['s:opmul', '1v'],
   \ 'open_new_file':         ['s:newfop', 'v'],
   \ 'prompt_mappings':       ['s:urprtmaps', 0],
   \ 'regexp_search':         ['s:regexp', 0],
@@ -78,7 +77,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
   \ 'user_command':          ['s:usrcmd', ''],
   \ 'working_path_mode':     ['s:pathmode', 'ra'],
   \ }, {
-  \ 'open_multiple_files':   's:opmul',
   \ 'regexp':                's:regexp',
   \ 'reuse_window':          's:nosplit',
   \ 'show_hidden':           's:showhidden',
@@ -991,87 +989,6 @@ function! s:CreateNewFile(...)
     \ s:newfop =~ '3\|v' || ( a:0 && a:1 == 'v' ) || md == 'v' ? 'vne' :
     \ ctrlp#normcmd('e')
   cal s:openfile(cmd, filpath, tail, 1)
-endfunction
-" * OpenMulti() {{{1
-function! s:OpenMulti(...)
-  let has_marked = exists('s:marked')
-  if ( !has_marked && a:0 ) || s:opmul == '0' || !s:ispath
-    \ || ( s:itemtype > 2 && s:getextvar('opmul') != 1 )
-    retu -1
-  en
-  " Get the options
-  let [nr, md] = [matchstr(s:opmul, '\d\+'), matchstr(s:opmul, '[thvi]')]
-  let [ur, jf] = [s:opmul =~ 'r', s:opmul =~ 'j']
-  let md = a:0 ? a:1 : ( md == '' ? 'v' : md )
-  let nopt = exists('g:ctrlp_open_multiple_files')
-  if !has_marked
-    let line = ctrlp#getcline()
-    if line == '' | retu | en
-    let marked = { 1 : fnamemodify(line, ':p') }
-    let [nr, ur, jf, nopt] = ['1', 0, 0, 1]
-  en
-  if ( !has_marked ) && !a:0
-    let md = s:argmaps(md, !has_marked ? 2 : 0)
-    if md == 'c'
-      unl! s:marked
-      cal s:BuildPrompt(0)
-    elsei !has_marked && md =~ '[axd]'
-      retu s:OpenNoMarks(md, line)
-    en
-    if md =~ '\v^c(ancel)?$' | retu | en
-    let nr = nr == '0' ? ( nopt ? '' : '1' ) : nr
-    let ur = !has_marked && md == 'r' ? 1 : ur
-  en
-  let mkd = values(has_marked ? s:marked : marked)
-  cal s:sanstail(join(s:prompt, ''))
-  cal s:PrtExit()
-  if nr == '0' || md == 'i'
-    retu map(mkd, "s:openfile('bad', v:val, '', 0)")
-  en
-  let tail = s:tail()
-  let [emptytail, bufnr] = [empty(tail), bufnr('^'.mkd[0].'$')]
-  let useb = bufnr > 0 && buflisted(bufnr) && emptytail
-  " Move to a replaceable window
-  let ncmd = ( useb ? ['b', 'bo vert sb'] : ['e', 'bo vne'] )
-    \ + ( ur ? [] : ['ignruw'] )
-  let fst = call('ctrlp#normcmd', ncmd)
-  " Check if the current window has a replaceable buffer
-  let repabl = !( md == 't' && !ur ) && empty(bufname('%')) && empty(&l:ft)
-  " Commands for the rest of the files
-  let [ic, cmds] = [1, { 'v': ['vert sb', 'vne'], 'h': ['sb', 'new'],
-    \ 't': ['tab sb', 'tabe'] }]
-  let [swb, &swb] = [&swb, '']
-  if md == 't' && ctrlp#tabcount() < tabpagenr()
-    let s:tabct = ctrlp#tabcount()
-  en
-  " Open the files
-  for va in mkd
-    let bufnr = bufnr('^'.va.'$')
-    if bufnr < 0 && getftype(va) == '' | con | en
-    let useb = bufnr > 0 && buflisted(bufnr) && emptytail
-    let snd = md != '' && has_key(cmds, md) ?
-      \ ( useb ? cmds[md][0] : cmds[md][1] ) : ( useb ? 'vert sb' : 'vne' )
-    let cmd = ic == 1 && ( !( !ur && fst =~ '^[eb]$' ) || repabl ) ? fst : snd
-    let conds = [( nr != '' && nr > 1 && nr < ic ) || ( nr == '' && ic > 1 ),
-      \ nr != '' && nr < ic]
-    if conds[nopt]
-      if !buflisted(bufnr) | cal s:openfile('bad', va, '', 0) | en
-    el
-      cal s:openfile(cmd, useb ? bufnr : va, tail, ic == 1)
-      if jf | if ic == 1
-        let crpos = [tabpagenr(), winnr()]
-      el
-        let crpos[0] += tabpagenr() <= crpos[0]
-        let crpos[1] += winnr() <= crpos[1]
-      en | en
-      let ic += 1
-    en
-  endfo
-  if jf && exists('crpos') && ic > 2
-    exe ( md == 't' ? 'tabn '.crpos[0] : crpos[1].'winc w' )
-  en
-  let &swb = swb
-  unl! s:tabct
 endfunction
 
 function! s:OpenNoMarks(md, line)
