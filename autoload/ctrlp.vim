@@ -21,6 +21,7 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'max_height':            ['s:mxheight', 10],
       \ 'max_history':           ['s:maxhst', exists('+hi') ? &hi : 20],
       \ 'open_new_file':         ['s:newfop', 'v'],
+      \ 'prompt_mappings':       ['s:urprtmaps', 0],
       \ 'regexp_search':         ['s:regexp', 0],
       \ 'root_markers':          ['s:rmarkers', []],
       \ 'split_window':          ['s:splitwin', 0],
