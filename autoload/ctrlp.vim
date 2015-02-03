@@ -249,9 +249,6 @@ function! s:UserCmd(lscmd)
   if exists('+ssl') && &ssl
     let [ssl, &ssl, path] = [&ssl, 0, tr(path, '/', '\')]
   endif
-  if (has('win32') || has('win64')) && match(&shellcmdflag, "/") != -1
-    let lscmd = substitute(lscmd, '\v(^|\&\&\s*)\zscd (/d)@!', 'cd /d ', '')
-  endif
   let path = exists('*shellescape') ? shellescape(path) : path
   let g:ctrlp_allfiles = split(system(printf(lscmd, path)), "\n")
   if exists('+ssl') && exists('ssl')
