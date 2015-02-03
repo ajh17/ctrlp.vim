@@ -118,7 +118,6 @@ let [s:lcmap, s:prtmaps] = ['nn <buffer> <silent>', {
   \ 'PrtCurEnd()':          ['<c-e>'],
   \ 'PrtCurLeft()':         ['<c-h>', '<left>', '<c-^>'],
   \ 'PrtCurRight()':        ['<c-l>', '<right>'],
-  \ 'PrtDeleteEnt()':       ['<F7>'],
   \ 'CreateNewFile()':      ['<c-y>'],
   \ 'OpenMulti()':          ['<c-o>'],
   \ 'PrtExit()':            ['<esc>', '<c-c>', '<c-g>'],
@@ -738,14 +737,6 @@ function! s:PrtClearCache()
   let s:force = 1
   cal s:BuildPrompt(1)
   unl s:force
-endfunction
-
-function! s:PrtDeleteEnt()
-  if s:itemtype == 2
-    cal s:PrtDeleteMRU()
-  elsei type(s:getextvar('wipe')) == 1
-    cal s:delent(s:getextvar('wipe'))
-  en
 endfunction
 
 function! s:PrtDeleteMRU()
