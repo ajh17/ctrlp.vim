@@ -22,7 +22,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'open_new_file':         ['s:newfop', 'v'],
       \ 'prompt_mappings':       ['s:urprtmaps', 0],
       \ 'regexp_search':         ['s:regexp', 0],
-      \ 'root_markers':          ['s:rmarkers', []],
       \ 'split_window':          ['s:splitwin', 0],
       \ 'tabpage_position':      ['s:tabpage', 'ac'],
       \ 'user_command':          ['s:usrcmd', 'ag %s -l --nocolor --hidden -g ""'],
@@ -31,7 +30,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'regexp':                's:regexp',
       \ 'switch_buffer':         's:jmptobuf',
       \ }, {
-      \ 'root_markers':          's:rmarkers',
       \ 'user_command':          's:usrcmd',
       \ 'working_path_mode':     's:pathmode',
       \ }]
@@ -1043,10 +1041,6 @@ function! ctrlp#setpathmode(pmode, ...)
   elsei a:pmode == 'r'
     let spath = a:0 ? a:1 : s:crfpath
     let markers = ['.git', '.hg', '.svn', '.bzr', '_darcs']
-    if type(s:rmarkers) == 3 && !empty(s:rmarkers)
-      if s:findroot(spath, s:rmarkers, 0, 0) != [] | return 1 | endif
-      cal filter(markers, 'index(s:rmarkers, v:val) < 0')
-    endif
     if s:findroot(spath, markers, 0, 0) != [] | return 1 | endif
   endif
   return 0
