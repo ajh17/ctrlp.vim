@@ -15,7 +15,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'dotfiles':              ['s:showhidden', 0],
       \ 'follow_symlinks':       ['s:folsym', 0],
       \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
-      \ 'match_func':            ['s:matcher', {}],
       \ 'match_window':          ['s:mw', ''],
       \ 'match_window_bottom':   ['s:mwbottom', 1],
       \ 'match_window_reversed': ['s:mwreverse', 1],
@@ -321,21 +320,7 @@ endfunction
 function! s:MatchedItems(items, pat, limit)
   let exc = exists('s:crfilerel') ? s:crfilerel : ''
   let items = s:narrowable() ? s:matched + s:mdata[3] : a:items
-  if s:matcher != {}
-    let argms =
-          \ has_key(s:matcher, 'arg_type') && s:matcher['arg_type'] == 'dict' ? [{
-          \ 'items':  items,
-          \ 'str':    a:pat,
-          \ 'limit':  a:limit,
-          \ 'mmode':  s:mmode(),
-          \ 'ispath': s:ispath,
-          \ 'crfile': exc,
-          \ 'regex':  s:regexp,
-          \ }] : [items, a:pat, a:limit, s:mmode(), s:ispath, exc, s:regexp]
-    let lines = call(s:matcher['match'], argms, s:matcher)
-  el
-    let lines = s:MatchIt(items, a:pat, a:limit, exc)
-  endif
+  let lines = s:MatchIt(items, a:pat, a:limit, exc)
   let s:matches = len(lines)
   unl! s:did_exp
   return lines
@@ -413,7 +398,7 @@ function! s:Update(str)
   " Stop if the string's unchanged
   if str == oldstr && !empty(str) && !exists('s:force') | return | endif
   let s:martcs = &scs && str =~ '\u' ? '\C' : ''
-  let pat = s:matcher == {} ? s:SplitPattern(str) : str
+  let pat = s:SplitPattern(str)
   let lines = s:nolim == 1 && empty(str) ? copy(g:ctrlp_lines)
         \ : s:MatchedItems(g:ctrlp_lines, pat, s:mw_res)
   cal s:Render(lines, pat)
@@ -1334,7 +1319,7 @@ function! s:modevar()
 endfunction
 
 function! s:nosort()
-  return s:matcher != {} || s:nolim == 1 || ( s:itemtype == 2 )
+  return s:nolim == 1 || ( s:itemtype == 2 )
         \ || ( s:itemtype =~ '\v^(1|2)$' && s:prompt == ['', '', ''] ) || !s:dosort
 endfunction
 
@@ -1345,7 +1330,7 @@ endfunction
 function! s:narrowable()
   return exists('s:act_add') && exists('s:matched') && s:matched != []
         \ && exists('s:mdata') && s:mdata[:2] == [s:dyncwd, s:itemtype, s:regexp]
-        \ && s:matcher == {} && !exists('s:did_exp')
+        \ && !exists('s:did_exp')
 endfunction
 
 function! s:getinput(...)
