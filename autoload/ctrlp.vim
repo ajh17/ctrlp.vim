@@ -21,7 +21,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ 'max_height':            ['s:mxheight', 10],
       \ 'max_history':           ['s:maxhst', exists('+hi') ? &hi : 20],
       \ 'open_new_file':         ['s:newfop', 'v'],
-      \ 'prompt_mappings':       ['s:urprtmaps', 0],
       \ 'regexp_search':         ['s:regexp', 0],
       \ 'root_markers':          ['s:rmarkers', []],
       \ 'split_window':          ['s:splitwin', 0],
@@ -87,7 +86,7 @@ let s:fpats = {
 
 " Get the options {{{2
 function! s:opts(...)
-  unl! s:usrcmd s:urprtmaps
+  unl! s:usrcmd
   for [ke, va] in items(s:opts)
     let {va[0]} = exists(s:pref.ke) ? {s:pref.ke} : va[1]
   endfor
@@ -122,10 +121,6 @@ function! s:opts(...)
 let s:maxdepth = min([s:maxdepth, 100])
 let s:glob = s:showhidden ? '.*\|*' : '*'
 let s:lash = ctrlp#utils#lash()
-" Keymaps
-if type(s:urprtmaps) == 4
-  cal extend(s:prtmaps, s:urprtmaps)
-endif
 endfunction
 
 function! s:match_window_opts()
