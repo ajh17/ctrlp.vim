@@ -120,7 +120,6 @@ let [s:lcmap, s:prtmaps] = ['nn <buffer> <silent>', {
   \ 'PrtCurRight()':        ['<c-l>', '<right>'],
   \ 'PrtDeleteEnt()':       ['<F7>'],
   \ 'CreateNewFile()':      ['<c-y>'],
-  \ 'MarkToOpen()':         ['<c-z>'],
   \ 'OpenMulti()':          ['<c-o>'],
   \ 'PrtExit()':            ['<esc>', '<c-c>', '<c-g>'],
   \ }]
@@ -1003,32 +1002,6 @@ function! s:CreateNewFile(...)
   cal s:openfile(cmd, filpath, tail, 1)
 endfunction
 " * OpenMulti() {{{1
-function! s:MarkToOpen()
-  if s:bufnr <= 0 || s:opmul == '0'
-    \ || ( s:itemtype > 2 && s:getextvar('opmul') != 1 )
-    retu
-  en
-  let line = ctrlp#getcline()
-  if empty(line) | retu | en
-  let filpath = s:ispath ? fnamemodify(line, ':p') : line
-  if exists('s:marked') && s:dictindex(s:marked, filpath) > 0
-    " Unmark and remove the file from s:marked
-    let key = s:dictindex(s:marked, filpath)
-    cal remove(s:marked, key)
-    if empty(s:marked) | unl s:marked | en
-  el
-    " Add to s:marked and place a new sign
-    if exists('s:marked')
-      let vac = s:vacantdict(s:marked)
-      let key = empty(vac) ? len(s:marked) + 1 : vac[0]
-      let s:marked = extend(s:marked, { key : filpath })
-    el
-      let [key, s:marked] = [1, { 1 : filpath }]
-    en
-  en
-  sil! cal ctrlp#statusline()
-endfunction
-
 function! s:OpenMulti(...)
   let has_marked = exists('s:marked')
   if ( !has_marked && a:0 ) || s:opmul == '0' || !s:ispath
