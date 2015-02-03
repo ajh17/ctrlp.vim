@@ -398,22 +398,14 @@ function! s:BuildPrompt(upd)
   let str = escape(s:getinput(), '\')
   if a:upd && ( s:matches || s:regexp || exists('s:did_exp')
         \ || str =~ '\(\\\(<\|>\)\|[*|]\)\|\(\\\:\([^:]\|\\:\)*$\)' )
-    sil! cal s:Update(str)
+    silent! call s:Update(str)
   endif
-  sil! cal ctrlp#statusline()
-  " Toggling
-  let [hiactive, hicursor, base] = s:focus
-        \ ? ['CtrlPPrtText', 'CtrlPPrtCursor', base]
-        \ : ['CtrlPPrtBase', 'CtrlPPrtBase', tr(base, '>', '-')]
   let hibase = 'CtrlPPrtBase'
   " Build it
-  redr
+  redraw
   let prt = copy(s:prompt)
   cal map(prt, 'escape(v:val, ''"\'')')
-  exe 'echoh' hibase '| echon "'.base.'"
-        \ | echoh' hiactive '| echon "'.prt[0].'"
-        \ | echoh' hicursor '| echon "'.prt[1].'"
-        \ | echoh' hiactive '| echon "'.prt[2].'" | echoh None'
+  exe 'echoh' hibase '| echon "'.base.'" | echon "'.prt[0].'" | echon "'.prt[1].'" | echon "'.prt[2].'" | echoh None'
   " Append the cursor at the end
   if empty(prt[1]) && s:focus
     exe 'echoh' hibase '| echon "_" | echoh None'
