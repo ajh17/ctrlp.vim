@@ -1628,21 +1628,6 @@ function! ctrlp#getcline()
         \ ? s:lines[linenr - 1 - offset] : ''
 endfunction
 
-function! ctrlp#exit()
-  cal s:PrtExit()
-endfunction
-
-function! ctrlp#prtclear()
-  cal s:PrtClear()
-endfunction
-
-function! ctrlp#call(func, ...)
-  retu call(a:func, a:000)
-endfunction
-
-function! ctrlp#getvar(var)
-  retu {a:var}
-endfunction
 "}}}1
 " * Initialization {{{1
 function! ctrlp#setlines(...)
