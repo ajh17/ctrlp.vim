@@ -81,8 +81,6 @@ let s:compare_lim = 3000
 
 let s:ficounts = {}
 
-let s:ccex = s:pref.'clear_cache_on_exit'
-
 " Regexp
 let s:fpats = {
       \ '^\(\\|\)\|\(\\|\)$': '\\|',
@@ -1313,10 +1311,6 @@ endfunction
 
 function! s:leavepre()
   if exists('s:bufnr') && s:bufnr == bufnr('%') | bw! | en
-  if !( exists(s:ccex) && !{s:ccex} )
-        \ && !( has('clientserver') && len(split(serverlist(), "\n")) > 1 )
-    cal ctrlp#clra()
-  en
 endfunction
 
 function! s:checkbuf()
