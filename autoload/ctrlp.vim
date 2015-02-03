@@ -61,7 +61,6 @@ let [s:lcmap, s:prtmaps] = ['nn <buffer> <silent>', {
       \ 'AcceptSelection("h")': ['<c-x>', '<c-cr>', '<c-s>'],
       \ 'AcceptSelection("t")': ['<c-t>'],
       \ 'AcceptSelection("v")': ['<c-v>', '<RightMouse>'],
-      \ 'ToggleFocus()':        ['<s-tab>'],
       \ 'ToggleRegex()':        ['<c-r>'],
       \ 'ToggleByFname()':      ['<c-d>'],
       \ 'PrtExpandDir()':       ['<tab>'],
@@ -693,11 +692,6 @@ function! s:MapSpecs()
 let s:smapped = s:bufnr
 endfunction
 " * Toggling {{{1
-function! s:ToggleFocus()
-  let s:focus = !s:focus
-  cal s:BuildPrompt(0)
-endfunction
-
 function! s:ToggleRegex()
   let s:regexp = !s:regexp
   cal s:PrtSwitcher()
@@ -709,11 +703,6 @@ function! s:ToggleByFname()
     let s:mfunc = s:mfunc()
     cal s:PrtSwitcher()
   en
-endfunction
-
-function! s:ToggleMRURelative()
-  cal ctrlp#mrufiles#tgrel()
-  cal s:PrtClearCache()
 endfunction
 
 function! s:PrtSwitcher()
