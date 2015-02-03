@@ -12,7 +12,6 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
       \ ['g:ctrlp_', 'b:ctrlp_', {
       \ 'by_filename':           ['s:byfname', 0],
       \ 'dotfiles':              ['s:showhidden', 0],
-      \ 'follow_symlinks':       ['s:folsym', 0],
       \ 'jump_to_buffer':        ['s:jmptobuf', 'Et'],
       \ 'match_window':          ['s:mw', ''],
       \ 'match_window_bottom':   ['s:mwbottom', 1],
@@ -884,13 +883,6 @@ function! ctrlp#dirnfile(entries)
         cal add(items[0], each)
       en | el
         cal add(items[0], each)
-      endif
-    elsei etype == 'link'
-      if s:folsym
-        let isfile = !isdirectory(each)
-        if s:folsym == 2 || !s:samerootsyml(each, isfile, cwd)
-          cal add(items[isfile], each)
-        endif
       endif
     elsei etype == 'file'
       cal add(items[1], each)
