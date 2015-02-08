@@ -1440,6 +1440,14 @@ function! ctrlp#setlines(...)
 endfunction
 
 function! ctrlp#init(type, ...)
+  let cwd = getcwd()
+  if cwd == fnamemodify($HOME, ':p:h')
+    echohl Warning
+    echom "Skipping $HOME"
+    echohl None
+    return
+  endif
+
   if exists('s:init') || s:iscmdwin() | return | endif
   let [s:ermsg, v:errmsg] = [v:errmsg, '']
   let [s:matches, s:init] = [1, 1]
